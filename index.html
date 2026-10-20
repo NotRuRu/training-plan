@@ -541,43 +541,80 @@
 
     .tag {
       font-size: 12px;
-      padding: 2px 9px;
+      padding: 2px 7px;
       border-radius: 20px;
       background: rgba(176, 141, 79, .18);
       color: var(--brass)
     }
 
     .meal {
-      cursor: pointer
+      cursor: pointer;
+      min-width: 0;
+      box-sizing: border-box;
+      border-radius: 16px;
+      padding: 12px;
     }
 
     .meal h3 {
-      margin: 0
+      margin: 0;
+      font-size: 15px;
     }
 
     .meal .ds {
       color: var(--dim);
-      font-size: 14px;
-      margin: 4px 0
+      font-size: 12px;
+      margin: 6px 0;
     }
 
     .meal .nu {
-      font-size: 13px;
-      color: var(--faint)
+      font-size: 12px;
+      color: var(--faint);
     }
+
+    #v-Meals .meal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+      gap: 10px;
+      align-items: start;
+    }
+
+    #v-Meals .meal {
+      width: 100%;
+      min-height: 155px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #v-Meals .meal > .row {
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    #v-Meals .meal .more {
+      margin-top: 10px;
+    }
+
+    #v-Meals .meal.open {
+      grid-column: 1 / -1;
+      min-height: 0;
+    }
+
 
     .meal .more {
       display: none;
       border-top: 1px solid var(--line);
       margin-top: 10px;
       padding-top: 10px;
-      white-space: pre-wrap;
       color: var(--ink);
       font-size: 14px
     }
 
     .meal.open .more {
       display: block
+    }
+
+    .meal .det { 
+      white-space: pre-line; 
     }
 
     .si {
@@ -1045,17 +1082,45 @@
     function renderMeals() {
       const L = DB.meals.filter(m => mealTag === 'All' || m.tag === mealTag);
       $('#v-Meals').innerHTML = `<div class="chips">${['All', ...TAGS].map(t => `<button class="${t === mealTag ? 'on' : ''}" data-t="${t}">${t}</button>`).join('')}</div>
-  ${L.length ? L.map(m => `<div class="card meal" data-m="${m.id}"><div class="row sp"><h3>${esc(m.n)}</h3><span class="tag">${esc(m.tag)}</span></div>
-    <div class="ds">${esc(m.d)}</div><div class="nu">${m.kcal ? m.kcal + ' kcal' : ''}${m.kcal && m.p ? ' · ' : ''}${m.p ? m.p + 'g protein' : ''}</div>
-    <div class="more">${esc(m.det) || 'No details yet.'}<div style="margin-top:12px"><button class="secondary" data-edit="${m.id}" style="margin:0">Edit meal</button></div></div></div>`).join('') : '<div class="empty">No meals here yet.</div>'}
-  <button class="primary" id="addm">+ Add meal</button>`;
+    ${L.length ? `<div class="meal-grid">${L.map(m => `
+      <div class="card meal" data-m="${m.id}">
+        <div class="row sp">
+          <h3>${esc(m.n)}</h3>
+        </div>
+        <div class="ds">${esc(m.d)}</div>
+        <div class="nu">
+          ${m.kcal ? m.kcal + ' kcal' : ''}
+          ${m.kcal && m.p ? ' · ' : ''}
+          ${m.p ? m.p + 'g protein' : ''}
+          <span class="tag">${esc(m.tag)}</span>
+        </div>
+        <div class="more">
+          <div class="det">${esc(m.det) || 'No details yet.'}</div>
+          <div style="margin-top:12px">
+            <button class="secondary" data-edit="${m.id}" style="margin:0">
+              Edit meal
+            </button>
+          </div>
+        </div>
+      </div>
+    `).join('')}</div>` : '<div class="empty">No meals here yet.</div>'}
+    <button class="primary" id="addm">+ Add meal</button>`;
     }
     $('#v-Meals').onclick = e => {
       const t = e.target.closest('button');
       if (t?.dataset.t) { mealTag = t.dataset.t; return renderMeals() }
       if (t?.id === 'addm') return mealForm(null);
       if (t?.dataset.edit) return mealForm(DB.meals.find(m => m.id === t.dataset.edit));
-      const c = e.target.closest('.meal'); if (c) c.classList.toggle('open');
+      const card = e.target.closest('.meal');
+      if (!card) return;
+
+      const wasOpen = card.classList.contains('open');
+      document.querySelectorAll('#v-Meals .meal.open').forEach(m => m.classList.remove('open'));
+
+      if (!wasOpen) {
+        card.classList.add('open');
+        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
     };
     function mealForm(m) {
       form(m ? 'Edit meal' : 'Add meal', [{ k: 'n', l: 'Title', v: m?.n || '' }, { k: 'd', l: 'Short description', v: m?.d || '' }, { k: 'tag', l: 'Tag', t: 'select', o: TAGS, v: m?.tag || 'Lunch' }, { k: 'kcal', l: 'Calories (kcal)', t: 'number', v: m?.kcal || '' }, { k: 'p', l: 'Protein (g)', t: 'number', v: m?.p || '' }, { k: 'det', l: 'Ingredients / recipe', t: 'area', v: m?.det || '' }], o => {
@@ -1064,29 +1129,156 @@
     }
 
     /* ===== EAT: shop ===== */
-    const money = v => { try { return new Intl.NumberFormat(undefined, { style: 'currency', currency: DB.cur || 'EUR' }).format(v) } catch (e) { return v.toFixed(2) } };
-    function renderShop() {
-      const tot = DB.shop.reduce((a, i) => a + i.p, 0), left = DB.shop.filter(i => !i.c).reduce((a, i) => a + i.p, 0);
-      $('#v-Shop').innerHTML = `<div class="card">${DB.shop.length ? DB.shop.map(i => `<div class="si ${i.c ? 'c' : ''}" data-i="${i.id}"><input type="checkbox" ${i.c ? 'checked' : ''}><span data-edit="1">${esc(i.n)}</span><b>${money(i.p)}</b></div>`).join('') : '<div class="empty">Your list is empty. Add what you need to buy.</div>'}
-    ${DB.shop.length ? `<div class="row sp" style="padding-top:12px;font-weight:700"><span>Total</span><span>${money(tot)}</span></div><div class="row sp" style="color:var(--faint);font-size:14px"><span>Still to buy</span><span>${money(left)}</span></div>` : ''}</div>
-  <button class="primary" id="addi">+ Add item</button>
-  ${DB.shop.length ? '<button class="secondary" id="unc">Uncheck all</button><button class="secondary danger" id="clr">Remove checked items</button>' : ''}
-  <button class="link" id="cur">Currency: ${esc(DB.cur)} (change)</button>`;
-    }
-    $('#v-Shop').onclick = e => {
-      const t = e.target, row = t.closest('.si');
-      if (t.id === 'addi') return itemForm(null);
-      if (t.id === 'unc') { DB.shop.forEach(i => i.c = 0); save(); return renderShop() }
-      if (t.id === 'clr') { DB.shop = DB.shop.filter(i => !i.c); save(); return renderShop() }
-      if (t.id === 'cur') return form('Currency', [{ k: 'c', l: '3-letter code, e.g. EUR, USD, GBP', v: DB.cur }], o => { DB.cur = (o.c || 'EUR').toUpperCase(); save(); renderShop() });
-      if (!row) return; const it = DB.shop.find(i => i.id === row.dataset.i);
-      if (t.type === 'checkbox') { it.c = t.checked ? 1 : 0; save(); renderShop() }
-      else itemForm(it);
+    const money = v => {
+      try {
+        return new Intl.NumberFormat(undefined, { style: 'currency', currency: DB.cur || 'EUR' }).format(v);
+      } catch (e) {
+        return v.toFixed(2);
+      }
     };
-    function itemForm(it) {
-      form(it ? 'Edit item' : 'Add item', [{ k: 'n', l: 'Item', v: it?.n || '' }, { k: 'p', l: 'Price', t: 'number', v: it?.p ?? '' }], o => {
-        if (!o.n) return; if (it) Object.assign(it, o); else DB.shop.push({ id: uid(), ...o, c: 0 }); save(); renderShop();
-      }, it ? () => { DB.shop = DB.shop.filter(x => x !== it); save(); renderShop() } : null);
+
+    function renderShop() {
+      const items = DB.shop;
+      const total = items.reduce((sum, i) => sum + i.p, 0);
+      const left = items.filter(i => !i.c).reduce((sum, i) => sum + i.p, 0);
+
+      const itemRows = items.map(i => `
+        <div class="si ${i.c ? 'c' : ''}" data-i="${i.id}">
+          <input type="checkbox" ${i.c ? 'checked' : ''}>
+          <span data-edit="1">${esc(i.n)}</span>
+          <b>${money(i.p)}</b>
+        </div>`).join('');
+
+      const list = items.length
+        ? itemRows
+        : '<div class="empty">Your list is empty. Add what you need to buy.</div>';
+
+      const totals = items.length ? `
+        <div class="row sp" style="padding-top:12px;font-weight:700">
+          <span>Total</span><span>${money(total)}</span>
+        </div>
+        <div class="row sp" style="color:var(--faint);font-size:14px">
+          <span>Still to buy</span><span>${money(left)}</span>
+        </div>` : '';
+
+      const extraButtons = items.length ? `
+        <button class="secondary" id="unc">Uncheck all</button>
+        <button class="secondary danger" id="clr">Remove checked items</button>` : '';
+
+      $('#v-Shop').innerHTML = `
+        <div class="card">${list}${totals}</div>
+        <button class="primary" id="addi">+ Add item</button>
+        ${extraButtons}
+        <button class="link" id="cur">Currency: ${esc(DB.cur)} (change)</button>`;
+    }
+
+    $('#v-Shop').onclick = e => {
+      const t = e.target;
+      const row = t.closest('.si');
+
+      if (t.id === 'addi') return itemForm(null);
+      if (t.id === 'cur') return currencyForm();
+
+      if (t.id === 'unc') {
+        DB.shop.forEach(i => i.c = 0);
+        save();
+        return renderShop();
+      }
+      if (t.id === 'clr') {
+        DB.shop = DB.shop.filter(i => !i.c);
+        save();
+        return renderShop();
+      }
+
+      if (!row) return;
+      const item = DB.shop.find(i => i.id === row.dataset.i);
+
+      if (t.type === 'checkbox') {
+        item.c = t.checked ? 1 : 0;
+        save();
+        renderShop();
+      } else {
+        itemForm(item);
+      }
+    };
+
+    function currencyForm() {
+      const currencies = [
+        'AUD — Australian Dollar (Australia)',
+        'BRL — Brazilian Real (Brazil)',
+        'CAD — Canadian Dollar (Canada)',
+        'CNY — Chinese Yuan (China)',
+        'CZK — Czech Koruna (Czechia)',
+        'DKK — Danish Krone (Denmark)',
+        'EUR — Euro (European Union)',
+        'GEL — Georgian Lari (Georgia)',
+        'HKD — Hong Kong Dollar (Hong Kong)',
+        'HUF — Hungarian Forint (Hungary)',
+        'INR — Indian Rupee (India)',
+        'IDR — Indonesian Rupiah (Indonesia)',
+        'ILS — Israeli New Shekel (Israel)',
+        'JPY — Japanese Yen (Japan)',
+        'MYR — Malaysian Ringgit (Malaysia)',
+        'MXN — Mexican Peso (Mexico)',
+        'NZD — New Zealand Dollar (New Zealand)',
+        'NOK — Norwegian Krone (Norway)',
+        'PHP — Philippine Peso (Philippines)',
+        'PLN — Polish Zloty (Poland)',
+        'RON — Romanian Leu (Romania)',
+        'RUB — Russian Ruble (Russia)',
+        'SAR — Saudi Riyal (Saudi Arabia)',
+        'SGD — Singapore Dollar (Singapore)',
+        'ZAR — South African Rand (South Africa)',
+        'KRW — South Korean Won (South Korea)',
+        'SEK — Swedish Krona (Sweden)',
+        'CHF — Swiss Franc (Switzerland)',
+        'THB — Thai Baht (Thailand)',
+        'TRY — Turkish Lira (Turkey)',
+        'AED — UAE Dirham (United Arab Emirates)',
+        'GBP — British Pound (United Kingdom)',
+        'USD — US Dollar (United States)',
+        'VND — Vietnamese Dong (Vietnam)'
+      ];
+
+      form('Currency', [
+        {
+          k: 'c',
+          l: 'Choose currency',
+          t: 'select',
+          o: currencies,
+          v: currencies.find(c => c.startsWith((DB.cur || 'EUR') + ' —'))
+            || currencies.find(c => c.startsWith('EUR —'))
+        }
+      ], o => {
+        DB.cur = (o.c || 'EUR').slice(0, 3);
+        save();
+        renderShop();
+      });
+    }
+
+    function itemForm(item) {
+      const fields = [
+        { k: 'n', l: 'Item', v: item?.n || '' },
+        { k: 'p', l: 'Price', t: 'number', v: item?.p ?? '' }
+      ];
+
+      const onSave = o => {
+        if (!o.n) return;
+        if (item) Object.assign(item, o);
+        else DB.shop.push({ id: uid(), ...o, c: 0 });
+        save();
+        renderShop();
+      };
+
+      const onDelete = item
+        ? () => {
+            DB.shop = DB.shop.filter(x => x !== item);
+            save();
+            renderShop();
+          }
+        : null;
+
+      form(item ? 'Edit item' : 'Add item', fields, onSave, onDelete);
     }
 
     /* ===== PROGRESS ===== */
