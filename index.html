@@ -665,7 +665,7 @@
     .hm .g {
       display: grid;
       grid-template-rows: repeat(7, 1fr);
-      grid-template-columns: repeat(22, 1fr);
+      grid-template-columns: repeat(20, 1fr);
       grid-auto-flow: column;
       gap: 3px
     }
@@ -698,7 +698,7 @@
 
     .mo {
       display: grid;
-      grid-template-columns: repeat(22, 1fr);
+      grid-template-columns: repeat(20, 1fr);
       gap: 3px;
       margin: 0 0 6px 38px;
       font-size: 11px;
@@ -806,7 +806,7 @@
   </header>
   <main class="wrap">
 
-    <section id="p-train" class="panel on">
+    <section id="p-train" class="panel">
       <div class="seg" id="seg-train">
         <button class="active" data-view="Workouts">Workouts</button>
         <button data-view="History">History</button>
@@ -824,12 +824,12 @@
       <div id="v-Shop" style="display:none"></div>
     </section>
 
-    <section id="p-prog" class="panel"></section>
+    <section id="p-prog" class="panel on"></section>
   </main>
 
   <nav>
     <div>
-      <button data-tab="train" class="on"><svg viewBox="0 0 24 24">
+      <button data-tab="train"><svg viewBox="0 0 24 24">
           <path d="M4 12h16" />
           <rect x="2" y="9" width="3" height="6" rx="1" />
           <rect x="19" y="9" width="3" height="6" rx="1" />
@@ -839,7 +839,7 @@
       <button data-tab="eat"><svg viewBox="0 0 24 24">
           <path d="M7 2v8a2 2 0 0 0 4 0V2M9 10v12M15 2c0 3-2 4-2 7s2 3 2 3v10" />
         </svg>Eat</button>
-      <button data-tab="prog"><svg viewBox="0 0 24 24">
+      <button data-tab="prog" class="on"><svg viewBox="0 0 24 24">
           <polyline points="3 17 9 11 13 15 21 6" />
           <polyline points="14 6 21 6 21 13" />
         </svg>Progress</button>
@@ -1093,7 +1093,7 @@
     function renderProg() {
       const H = DB.hist, n = H.length, ms = H.reduce((a, h) => a + (h.t1 - h.t0), 0), vol = H.reduce((a, h) => a + h.vol, 0);
       const byDay = {}; H.forEach(h => byDay[dk(h.t0)] = (byDay[dk(h.t0)] || 0) + h.vol);
-      const max = Math.max(1, ...Object.values(byDay)), W = 22, now = new Date(), start = new Date(now);
+      const max = Math.max(1, ...Object.values(byDay)), W = 20, now = new Date(), start = new Date(now);
       start.setHours(0, 0, 0, 0); start.setDate(start.getDate() - start.getDay() - (W - 1) * 7);
       let cells = '', months = '', last = -1;
       for (let c = 0; c < W; c++) {
@@ -1107,15 +1107,74 @@
         }
       }
       const log = DB.bw.slice().reverse().slice(0, 12);
-      $('#p-prog').innerHTML = `<div class="card"><h2>Overview</h2><div class="stats"><div><b>${n}</b><span>Workouts</span></div><div><b>${fmtDur(ms)}</b><span>Time spent</span></div><div><b>${fmtVol(vol)}</b><span>Volume (kg)</span></div></div></div>
-  <div class="card"><div class="mo">${months}</div><div class="hm"><div class="wd">${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => `<span>${d}</span>`).join('')}</div><div class="g">${cells}</div></div>
-    <div class="lg"><span>Avg: ${n ? fmtDur(ms / n) : '–'}</span><span>Less <i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i> More</span></div></div>
-  <div class="card"><h2>Bodyweight</h2>
-    <div class="two" style="grid-template-columns:1.3fr 1fr auto;align-items:center"><input type="date" id="bd" value="${dk(Date.now())}"><input type="number" id="bk" inputmode="decimal" step="0.1" placeholder="kg"><button class="primary" id="bl" style="margin:0;width:auto;padding:12px 18px">Log</button></div>
-    <table style="margin-top:8px">${log.length ? '<tr><th>Date</th><th class="n">Weight</th><th class="n">Change</th></tr>' + log.map((e, i) => { const p = log[i + 1], d = p ? e.weight - p.weight : null; return `<tr data-d="${e.date}"><td>${e.date}</td><td class="n">${e.weight} kg</td><td class="n">${d == null ? '–' : (d > 0 ? '+' : '') + d.toFixed(1)}</td></tr>` }).join('') : '<tr><td class="empty">No entries yet. Log your first weigh-in above.</td></tr>'}</table>
-    ${log.length ? '<p style="font-size:12px;color:var(--faint);margin:8px 0 0">Tap an entry to delete it.</p>' : ''}</div>
-  <div class="card"><h3>Backup</h3><p>Everything lives on this device only. Export a copy now and then.</p>
-    <div class="two"><button class="secondary" id="exp" style="margin:0">Export</button><button class="secondary" id="imp" style="margin:0">Import</button></div><input type="file" id="file" accept="application/json" hidden></div>`;
+      const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+        .map(d => `<span>${d}</span>`)
+        .join('');
+
+      const legend = 'Less <i></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i> More';
+      const avg = n ? fmtDur(ms / n) : '–';
+
+      const bwRows = log.map((e, i) => {
+        const prev = log[i + 1];
+        const diff = prev ? e.weight - prev.weight : null;
+        const change = diff == null ? '–' : (diff > 0 ? '+' : '') + diff.toFixed(1);
+        return `<tr data-d="${e.date}">
+          <td>${e.date}</td>
+          <td class="n">${e.weight} kg</td>
+          <td class="n">${change}</td>
+        </tr>`;
+      }).join('');
+
+      const bwTable = log.length
+        ? `<tr><th>Date</th><th class="n">Weight</th><th class="n">Change</th></tr>${bwRows}`
+        : '<tr><td class="empty">No entries yet. Log your first weigh-in above.</td></tr>';
+
+      const bwHint = log.length
+        ? '<p style="font-size:12px;color:var(--faint);margin:8px 0 0">Tap an entry to delete it.</p>'
+        : '';
+
+      $('#p-prog').innerHTML = `
+        <div class="card">
+          <h2>Overview</h2>
+          <div class="stats">
+            <div><b>${n}</b><span>Workouts</span></div>
+            <div><b>${fmtDur(ms)}</b><span>Time spent</span></div>
+            <div><b>${fmtVol(vol)}</b><span>Volume (kg)</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="mo">${months}</div>
+          <div class="hm">
+            <div class="wd">${weekdays}</div>
+            <div class="g">${cells}</div>
+          </div>
+          <div class="lg">
+            <span>Avg: ${avg}</span>
+            <span>${legend}</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Bodyweight</h2>
+          <div class="two" style="grid-template-columns:1.3fr 0.5fr auto;align-items:center">
+            <input type="date" id="bd" value="${dk(Date.now())}" style="-webkit-appearance:none">
+            <input type="number" id="bk" inputmode="decimal" step="0.1" placeholder="kg">
+            <button class="primary" id="bl" style="margin:0;width:auto;padding:12px 18px">Log</button>
+          </div>
+          <table style="margin-top:8px">${bwTable}</table>
+          ${bwHint}
+        </div>
+
+        <div class="card">
+          <h3>Backup</h3>
+          <p>Everything lives on this device only. Export a copy now and then.</p>
+          <div class="two">
+            <button class="secondary" id="exp" style="margin:0">Export</button>
+            <button class="secondary" id="imp" style="margin:0">Import</button>
+          </div>
+          <input type="file" id="file" accept="application/json" hidden>
+        </div>`;
     }
     $('#p-prog').onclick = e => {
       const t = e.target;
@@ -1131,9 +1190,28 @@
 
     /* ===== init ===== */
     $('#today').textContent = new Date().toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
-    if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => { }));
+    let tapped=false;
+    // service worker update prompt. Basically show update button if a new version is available.
+    function askUpdate(w){
+      if($('#upd'))return;
+      const b=document.createElement('button');b.id='upd';
+      b.textContent='New version available. Tap to update';
+      b.style.cssText='position:fixed;left:14px;right:14px;max-width:452px;margin:0 auto;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:40;background:var(--iron);color:#fff;border:0;border-radius:12px;padding:14px;font:600 15px var(--f);box-shadow:0 8px 24px rgba(0,0,0,.4)';
+      b.onclick=()=>{tapped=true;w.postMessage('SKIP_WAITING')};
+      document.body.appendChild(b);
+    }
+    if('serviceWorker' in navigator){
+      addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').then(reg=>{
+        if(reg.waiting&&navigator.serviceWorker.controller)askUpdate(reg.waiting);
+        reg.addEventListener('updatefound',()=>{
+          const w=reg.installing;
+          w.addEventListener('statechange',()=>{if(w.state==='installed'&&navigator.serviceWorker.controller)askUpdate(w)});
+        });
+      }).catch(()=>{}));
+      navigator.serviceWorker.addEventListener('controllerchange',()=>{if(tapped)location.reload()});
+    }
     if (DB.sess && find(DB.sess.wid)[1]) inW = DB.sess.wid;
-    renderTrain();
+    renderProg();
   </script>
 </body>
 

@@ -2,7 +2,7 @@
 // Caches the app shell so it opens even with no signal at the gym,
 // and quietly refreshes the cache from the network whenever you're online.
 
-const CACHE_NAME = 'back-to-fit-v0.1';
+const CACHE_NAME = 'back-to-fit-v0.1.1';
 const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (event) => {
@@ -11,7 +11,10 @@ self.addEventListener('install', (event) => {
       .then((cache) => cache.addAll(APP_SHELL))
       .catch(() => {}) // don't block install if one asset fails
   );
-  self.skipWaiting();
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data === "SKIP_WAITING") self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
