@@ -1380,6 +1380,30 @@
         save(); after();
       }, ex ? () => { w.ex = w.ex.filter(x => x !== ex); if (DB.sess) delete DB.sess.s[ex.id]; save(); after() } : null);
     }
+    
+    function finish(w) {
+      const S = DB.sess, ents = []; let vol = 0;
+      w.ex.forEach(ex => {
+        const done = (S.s[ex.id] || []).filter(s => s.d); if (!done.length) return;
+        const work = done.filter(s => !s.wu);
+        ents.push({ n: ex.n, sets: done.map(s => ({ k: s.k || 0, r: s.r || 0, wu: s.wu })) });
+        work.forEach(s => vol += (s.k || 0) * (s.r || 0));
+        if (!work.length) return;
+        ex.last = done.map(s => ({ k: s.k || 0, r: s.r || 0 }));
+        if (work[work.length - 1].k) ex.w = work[work.length - 1].k;
+        const hit = work.length >= ex.s && work.every(s => s.r >= hiR(ex.r)), miss = work.some(s => s.r < loR(ex.r));
+        ex.h = hit ? (ex.h || 0) + 1 : 0; ex.f = miss ? (ex.f || 0) + 1 : 0;
+        if (ex.h >= 2) { ex.w = Math.round((ex.w + ex.inc) * 2) / 2; ex.h = 0 }
+        else if (ex.f >= 2 && ex.w > 0) { ex.w = Math.round(ex.w * .9 * 2) / 2; ex.f = 0 }
+      });
+      if (!ents.length) return alert('Tick at least one set before finishing.');
+      DB.hist.unshift({ id: uid(), n: w.n, t0: S.t0, t1: Date.now(), ex: ents, vol });
+      DB.sess = null; inW = null; save();
+      $('#seg-train').style.display = 'flex';
+      document.querySelectorAll('#seg-train button').forEach(b => b.classList.toggle('active', b.dataset.view === 'History'));
+      $('#v-Workouts').style.display = 'none'; $('#v-History').style.display = 'block'; renderHist();
+    }
+
     /* ===== TRAIN: history ===== */
     function renderHist() {
       const el = $('#v-History');
