@@ -237,6 +237,18 @@
       border-radius: 10px;
       margin-top: 6px
     }
+    
+    .primary-small {
+      width: auto;
+      background: var(--iron);
+      color: #fff;
+      border: 0;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 10px 12px;
+      border-radius: 10px;
+      margin: 0;
+    }
 
     .secondary {
       width: 100%;
@@ -255,11 +267,12 @@
     }
 
     .link {
-      background: none;
       border: 0;
       color: var(--brass);
       font-size: 13px;
-      padding: 8px 0
+      padding: 2px 7px;
+      border-radius: 20px;
+      background: rgba(176, 141, 79, .18);
     }
 
     .empty {
@@ -269,96 +282,125 @@
       font-size: 14px
     }
 
-    /* folders */
-    .fold {
-      width: 100%;
+    /* folders + workout cards */
+    .fh {
       display: flex;
       align-items: center;
-      gap: 12px;
-      background: var(--s);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 14px;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .fn {
+      flex: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: none;
+      border: 0;
       color: var(--ink);
-      font-size: 16px;
-      font-weight: 600;
+      font-size: 20px;
+      font-weight: 700;
+      padding: 12px 4px;
+      min-height: 48px;
       text-align: left;
-      min-height: 56px
     }
 
-    .fold small {
-      margin-left: auto;
-      color: var(--faint);
+    .fn small {
+      font-size: 14px;
       font-weight: 400;
-      font-size: 13px
+      color: var(--faint);
     }
 
-    .fold svg {
-      width: 22px;
-      height: 22px;
-      stroke: var(--brass);
-      fill: none;
-      stroke-width: 1.8;
-      flex: none
+    .fn .ch {
+      display: inline-block;
+      color: var(--faint);
+      transition: transform 0.2s;
+      margin-right: 4px;
     }
 
-    .fold .ch {
-      transition: transform .2s;
-      stroke: var(--faint);
-      width: 18px;
-      height: 18px
-    }
-
-    .fold.open {
-      border-color: var(--iron);
-      border-radius: 12px 12px 0 0
-    }
-
-    .fold.open .ch {
-      transform: rotate(90deg)
-    }
-
-    .kids {
-      background: var(--s);
-      border: 1px solid var(--iron);
-      border-top: 0;
-      border-radius: 0 0 12px 12px;
-      padding: 8px;
-      margin-bottom: 12px;
-      display: grid;
-      gap: 6px
+    .fn.open .ch {
+      transform: rotate(90deg);
     }
 
     .fw {
-      margin-bottom: 10px
+    margin-bottom: 10px
     }
 
-    .fw .fold.open {
-      margin-bottom: 0
-    }
-
-    .fw .kids {
-      margin-bottom: 0
-    }
-
-    .wk {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
+    .dots {
+      width: 36px;
+      height: 26px;
+      flex: none;
       background: var(--s2);
       border: 1px solid var(--line);
-      color: var(--ink);
-      border-radius: 9px;
-      padding: 13px 14px;
-      font-size: 15px;
-      min-height: 48px
+      color: var(--dim);
+      border-radius: 10px;
+      font-size: 14px;
+      letter-spacing: 1px;
     }
 
-    .wk em {
-      font-style: normal;
-      font-size: 11px;
-      color: var(--brass)
+    .wgrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+      gap: 10px;
+      margin: 4px 0 12px;
+    }
+
+    .wcard {
+      cursor: pointer;
+      min-width: 0;
+      margin: 0;
+      padding: 12px;
+      border-radius: 16px;
+      min-height: 130px;
+    }
+
+    .wcard h3 {
+      margin: 0 0 6px;
+      font-size: 16px;
+    }
+
+    .wcard .ds {
+      color: var(--dim);
+      font-size: 13px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .wcard .tag {
+        display: inline-block;
+        margin-top: 8px;
+    }
+
+    .wgrid .add {
+      min-height: 130px;
+      border-radius: 16px;
+    }
+
+    /* Workout popup */
+    .ph {
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .ph h2 {
+      margin: 0;
+      text-align: center;
+    }
+
+    .prow {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+    }
+
+    .prow small {
+      display: block;
+      color: var(--faint);
+      font-size: 13px;
     }
 
     .add {
@@ -375,17 +417,20 @@
     /* workout */
     .pill {
       position: sticky;
-      top: calc(env(safe-area-inset-top, 0px) + 4px);
+      top: calc(env(safe-area-inset-top, 0px));
       z-index: 20;
       background: var(--s2);
       border: 1px solid var(--iron);
-      border-radius: 20px;
+      border-left: 0;
+      border-right: 0;
+      border-radius: 7px 7px 0 0;
       padding: 8px 14px;
       display: flex;
       justify-content: space-between;
       font-size: 14px;
       font-variant-numeric: tabular-nums;
-      margin-bottom: 12px
+      margin-bottom: 12px;
+      align-items: center;
     }
 
     .ex {
@@ -463,6 +508,61 @@
       background: var(--green);
       border-color: var(--green);
       color: #fff
+    }
+
+    /* Rest timer between sets */
+    .rest {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      height: 30px;
+      margin: 2px 0 4px;
+      color: var(--brass);
+      font-size: 15px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      cursor: pointer;
+    }
+
+    .rest::before,
+    .rest::after {
+      content: "";
+      flex: 1;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(176, 141, 79, 0.22);
+    }
+
+    .rest.run {
+      position: relative;
+      height: 44px;
+      justify-content: center;
+      background: var(--s2);
+      border-radius: 10px;
+      overflow: hidden;
+      color: #fff;
+    }
+
+    .rest.run::before,
+    .rest.run::after {
+      display: none;
+    }
+
+    .rest .fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      background: var(--brass);
+      transition: width 1s linear;
+    }
+
+    .rest.over .fill {
+      background: var(--iron);
+    }
+
+    .rest.run span {
+      position: relative;
     }
 
     /* history */
@@ -960,48 +1060,285 @@
     const find = id => { for (const f of DB.folders) { const w = f.w.find(w => w.id === id); if (w) return [f, w] } return [] };
     function renderTrain() { view('#seg-train') === 'History' ? renderHist() : inW ? renderWorkout() : renderFolders() }
 
-    const FOLD = '<svg viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
+    /* ---- folders ---- */
     function renderFolders() {
       $('#seg-train').style.display = 'flex';
-      $('#v-Workouts').innerHTML = DB.folders.map((f, i) => `<div class="fw"><button class="fold ${DB.open === i ? 'open' : ''}" data-f="${i}">${FOLD}${esc(f.n)}<small>${f.w.length} workout${f.w.length == 1 ? '' : 's'}</small><svg class="ch" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>${DB.open === i ? `<div class="kids">${f.w.map(w => `<button class="wk" data-w="${w.id}"><span>${esc(w.n)}</span>${DB.sess && DB.sess.wid === w.id ? '<em>IN PROGRESS</em>' : `<span style="color:var(--faint);font-size:13px">${w.ex.length} exercises</span>`}</button>`).join('')}<button class="add" data-add="${i}">+ Add workout</button><button class="link" data-ren="${i}">Rename folder</button></div>` : ''}</div>`).join('');
+
+      $('#v-Workouts').innerHTML = DB.folders.map((f, i) => {
+        const isOpen = DB.open === i;
+        const count = `${f.w.length} workout${f.w.length === 1 ? '' : 's'}`;
+
+        const cards = f.w.map(w => {
+          const running = DB.sess && DB.sess.wid === w.id;
+          const names = w.ex.map(e => e.n).join(', ') || 'No exercises yet';
+          return `
+            <div class="card wcard" data-w="${w.id}">
+              <h3>${esc(w.n)}</h3>
+              <div class="ds">${esc(names)}</div>
+              ${running ? '<span class="tag">In progress</span>' : ''}
+            </div>`;
+        }).join('');
+
+        return `
+          <div class="fw">
+            <div class="fh">
+              <button class="fn ${isOpen ? 'open' : ''}" data-f="${i}">
+                <span><span class="ch">›</span> ${esc(f.n)}</span>
+                <small>${count}</small>
+              </button>
+              <button class="dots" data-menu="${i}" aria-label="Folder options">•••</button>
+            </div>
+            ${isOpen ? `<div class="wgrid">${cards}<button class="add" data-add="${i}">+ Add workout</button></div>` : ''}
+          </div>`;
+      }).join('');
     }
+
     $('#v-Workouts').onclick = e => {
-      const t = e.target.closest('button'); if (!t) return; const d = t.dataset;
-      if (d.f !== undefined) { DB.open = DB.open == +d.f ? null : +d.f; save(); renderFolders() }
-      else if (d.add !== undefined) form('New workout', [{ k: 'n', l: 'Name', v: '' }], o => { if (o.n) { DB.folders[+d.add].w.push({ id: uid(), n: o.n, ex: [] }); save(); renderFolders() } });
-      else if (d.ren !== undefined) form('Rename folder', [{ k: 'n', l: 'Name', v: DB.folders[+d.ren].n }], o => { if (o.n) { DB.folders[+d.ren].n = o.n; save(); renderFolders() } });
-      else if (d.w) {
-        if (DB.sess && DB.sess.wid !== d.w && !confirm('Another workout is in progress. Discard it and start this one?')) return;
-        if (!DB.sess || DB.sess.wid !== d.w) DB.sess = { wid: d.w, t0: null, rest: null, s: {} };
-        inW = d.w; save(); renderWorkout();
+      if (inW) return;
+
+      const menu = e.target.closest('[data-menu]');
+      const add = e.target.closest('[data-add]');
+      const card = e.target.closest('[data-w]');
+      const fold = e.target.closest('[data-f]');
+
+      if (menu) return folderMenu(+menu.dataset.menu);
+      if (add) return addWorkout(+add.dataset.add);
+      if (card) return workoutPopup(card.dataset.w);
+      if (fold) {
+        const i = +fold.dataset.f;
+        DB.open = DB.open === i ? null : i;
+        save();
+        renderFolders();
       }
     };
 
+    /* small action sheet: sheet('Title', [{label, run, danger}]) */
+    function sheet(title, actions) {
+      const m = document.createElement('div');
+      m.className = 'modal';
+      m.innerHTML = `
+        <div class="sheet">
+          <h2>${esc(title)}</h2>
+          ${actions.map((a, i) => `<button class="secondary ${a.danger ? 'danger' : ''}" data-i="${i}">${a.label}</button>`).join('')}
+          <button class="secondary" data-x>Cancel</button>
+        </div>`;
+      document.body.appendChild(m);
+      m.onclick = e => {
+        if (e.target === m || e.target.dataset.x !== undefined) return m.remove();
+        const b = e.target.closest('[data-i]');
+        if (b) { m.remove(); actions[+b.dataset.i].run(); }
+      };
+    }
+
+    function folderMenu(i) {
+      const f = DB.folders[i];
+      const actions = [
+        { label: 'Rename folder', run: () => renameFolder(i) },
+        { label: 'Add workout', run: () => addWorkout(i) }
+      ];
+      if (f.w.length) actions.push({ label: 'Delete all workouts', danger: true, run: () => deleteAll(i) });
+      sheet(f.n, actions);
+    }
+
+    function renameFolder(i) {
+      form('Rename folder', [{ k: 'n', l: 'Name', v: DB.folders[i].n }], o => {
+        if (!o.n) return;
+        DB.folders[i].n = o.n;
+        save();
+        renderFolders();
+      });
+    }
+
+    function addWorkout(i) {
+      form('New workout', [{ k: 'n', l: 'Name', v: '' }], o => {
+        if (!o.n) return;
+        DB.folders[i].w.push({ id: uid(), n: o.n, ex: [] });
+        DB.open = i;
+        save();
+        renderFolders();
+      });
+    }
+
+    function deleteAll(i) {
+      const f = DB.folders[i];
+      if (!confirm(`Delete all ${f.w.length} workouts in "${f.n}"? Your history is kept. This can't be undone.`)) return;
+      if (DB.sess && f.w.some(w => w.id === DB.sess.wid)) DB.sess = null;
+      f.w = [];
+      save();
+      renderFolders();
+    }
+
+    /* ---- workout preview popup ---- */
+    function workoutPopup(id) {
+      const [f, w] = find(id);
+      if (!w) return;
+
+      const last = DB.hist.find(h => h.n === w.n);
+      const days = last ? Math.floor((Date.now() - last.t0) / 864e5) : null;
+      const lastText = !last ? 'never' : days === 0 ? 'today' : days === 1 ? 'yesterday' : `${days} days ago`;
+      const running = DB.sess && DB.sess.wid === w.id;
+      const refresh = () => { renderFolders(); workoutPopup(w.id); };
+
+      const rows = w.ex.map(ex => `
+        <div class="prow" data-e="${ex.id}">
+          <b>${ex.s} × ${esc(ex.n)}</b>
+          <small>${esc(ex.r)} reps${ex.w ? ' · ' + ex.w + ' kg' : ''}</small>
+        </div>`).join('');
+
+      const m = document.createElement('div');
+      m.className = 'modal';
+      m.innerHTML = `
+        <div class="sheet">
+          <div class="ph">
+            <button class="link" data-x aria-label="Close" style="font-size:22px">✕</button>
+            <h2>${esc(w.n)}</h2>
+            <button class="link" data-edit>Edit</button>
+          </div>
+          <p>Last performed: ${lastText}</p>
+          ${rows || '<div class="empty">No exercises yet. Tap Edit to add some.</div>'}
+          ${w.ex.length ? `<button class="primary" data-start style="margin-top:14px">${running ? 'Resume workout' : 'Start workout'}</button>` : ''}
+        </div>`;
+      document.body.appendChild(m);
+
+      m.onclick = e => {
+        if (e.target === m || e.target.closest('[data-x]')) return m.remove();
+
+        if (e.target.closest('[data-start]')) {
+          if (startWorkout(w.id)) m.remove();
+          return;
+        }
+        if (e.target.closest('[data-edit]')) {
+          m.remove();
+          return editWorkout(w, f, refresh);
+        }
+        const row = e.target.closest('[data-e]');
+        if (row) {
+          m.remove();
+          exForm(w, w.ex.find(x => x.id === row.dataset.e), refresh);
+        }
+      };
+    }
+
+    function editWorkout(w, f, refresh) {
+      sheet(w.n, [
+        {
+          label: 'Rename workout',
+          run: () => form('Rename workout', [{ k: 'n', l: 'Name', v: w.n }], o => {
+            if (o.n) { w.n = o.n; save(); }
+            refresh();
+          })
+        },
+        { label: 'Add exercise', run: () => exForm(w, null, refresh) },
+        {
+          label: 'Delete workout',
+          danger: true,
+          run: () => {
+            if (!confirm(`Delete "${w.n}"?`)) return refresh();
+            f.w = f.w.filter(x => x !== w);
+            if (DB.sess?.wid === w.id) DB.sess = null;
+            save();
+            renderFolders();
+          }
+        }
+      ]);
+    }
+
+    function startWorkout(id) {
+      if (DB.sess && DB.sess.wid !== id && !confirm('Another workout is in progress. Discard it and start this one?')) return false;
+      if (!DB.sess || DB.sess.wid !== id) DB.sess = { wid: id, t0: null, rest: null, s: {} };
+      inW = id;
+      save();
+      renderWorkout();
+      return true;
+    }
+
     /* active workout */
-    let wl = null;
     const sets = ex => { const S = DB.sess.s; if (!S[ex.id]) S[ex.id] = Array.from({ length: ex.s }, () => ({ k: ex.w, r: '', d: 0, wu: 0 })); return S[ex.id] };
+
+    /* ---- rest timer helpers ---- */
+    function restRow(ex, i) {
+      const R = DB.sess.rest;
+      const active = R && R.e === ex.id && R.i === i;
+      if (!active) return `<div class="rest" data-act="rest"><span>${clock(ex.rest || 90)}</span></div>`;
+      return `<div class="rest run" data-act="rest"><div class="fill"></div><span></span></div>`;
+    }
+
+    function parseTime(str) {
+      const [a, b] = String(str).split(':');
+      return b === undefined ? Math.round(+a) || 0 : Math.round(+a * 60 + +b) || 0;
+    }
+
+    function editRest(w, exId) {
+      const ex = w.ex.find(x => x.id === exId);
+      form('Rest timer', [{ k: 't', l: 'Rest between sets (e.g. 1:30, or 90 for seconds)', v: clock(ex.rest || 90) }], o => {
+        const sec = parseTime(o.t);
+        if (!sec) return;
+        ex.rest = sec;
+        if (DB.sess.rest && DB.sess.rest.e === ex.id) DB.sess.rest.total = sec;
+        save();
+        renderWorkout();
+      });
+    }
+
     function renderWorkout() {
       const [f, w] = find(inW); if (!w) { inW = null; return renderFolders() }
       $('#seg-train').style.display = 'none';
-      $('#v-Workouts').innerHTML = `<button class="link" id="back">‹ Back</button>
-  <div class="row sp"><h2>${esc(w.n)}</h2><button class="link" id="wmenu">Edit workout</button></div>
-  <div class="pill"><span id="tm">⏱ 0:00</span><span id="rt"></span></div>
-  <div class="card" style="padding-top:2px">${w.ex.length ? w.ex.map(ex => {
+      if (DB.sess.rest && !DB.sess.rest.e) DB.sess.rest = null; // timer saved in the old format
+
+      const exercises = w.ex.map(ex => {
         const S = sets(ex), L = ex.last;
+        const lastText = L ? ' · last: ' + L.map(s => (s.k ? s.k + '×' : 'BW×') + s.r).join(', ') : '';
+
+        const rows = S.map((s, i) => `
+          <div class="sl ${s.d ? 'd' : ''}" data-i="${i}">
+            <div class="b ${s.wu ? 'w' : ''}" data-act="wu">${s.wu ? 'W' : i + 1}</div>
+            <input type="number" inputmode="decimal" step="any" data-f="k" value="${s.k || ''}" placeholder="BW">
+            <input type="number" inputmode="numeric" data-f="r" value="${s.r}" placeholder="${L && L[i] ? L[i].r : loR(ex.r)}">
+            <div class="ck ${s.d ? 'd' : ''}" data-act="ck">✓</div>
+          </div>
+          ${restRow(ex, i)}`).join('');
+
         return `<div class="ex" data-e="${ex.id}"><button class="nm" data-edit="${ex.id}">${esc(ex.n)}</button>
-    <div class="meta">${ex.s} × ${esc(ex.r)}${L ? ' · last: ' + L.map(s => (s.k ? s.k + '×' : 'BW×') + s.r).join(', ') : ''}</div>
-    <div class="sl hd"><span>Set</span><span>kg</span><span>Reps</span><span>✓</span></div>
-    ${S.map((s, i) => `<div class="sl ${s.d ? 'd' : ''}" data-i="${i}"><div class="b ${s.wu ? 'w' : ''}" data-act="wu">${s.wu ? 'W' : i + 1}</div><input type="number" inputmode="decimal" step="any" data-f="k" value="${s.k || ''}" placeholder="BW"><input type="number" inputmode="numeric" data-f="r" value="${s.r}" placeholder="${(L && L[i] ? L[i].r : loR(ex.r))}"><div class="ck ${s.d ? 'd' : ''}" data-act="ck">✓</div></div>`).join('')}
-    <button class="add" data-act="add" style="margin-top:4px">+ Add set</button></div>`}).join('') : '<div class="empty">No exercises yet.</div>'}
-    <button class="add" id="addex" style="margin-top:8px">+ Add exercise</button></div>
-  <button class="primary" id="fin">Finish workout</button>
-  <button class="secondary danger" id="disc">Discard session</button>`;
+        <div class="meta">${ex.s} × ${esc(ex.r)}${lastText}</div>
+        <div class="sl hd"><span>Set</span><span>kg</span><span>Reps</span><span>✓</span></div>
+        ${rows}
+        <button class="add" data-act="add" style="margin-top:4px">+ Add set</button></div>`;
+      }).join('');
+
+      $('#v-Workouts').innerHTML = `
+      <div class="row sp" style="align-items:baseline"><button class="link" id="back">‹ Back</button><h2>${esc(w.n)}</h2><button class="link" id="wmenu">Edit workout</button></div>
+      <div class="pill"><span id="tm">⏱ 0:00</span><button class="primary-small" id="fin">Finish</button></div>
+      <div class="card" style="padding-top:2px">${exercises || '<div class="empty">No exercises yet.</div>'}
+      </div>
+      <button class="add" id="addex" style="margin-top:8px">+ Add exercise</button>
+      <button class="secondary danger" id="disc">Discard session</button>`;
       keepAwake(); tick();
     }
     function keepAwake() { try { navigator.wakeLock?.request('screen').catch(() => { }) } catch (e) { } }
     document.addEventListener('visibilitychange', () => { if (!document.hidden && inW) keepAwake() });
     setInterval(() => { if (inW) tick() }, 1000);
-    function tick() { const S = DB.sess; if (!S || !$('#tm')) return; $('#tm').textContent = '⏱ ' + (S.t0 ? clock((Date.now() - S.t0) / 1000) : '0:00'); $('#rt').textContent = S.rest ? 'Rest ' + clock((Date.now() - S.rest) / 1000) : '' }
+
+    function tick() {
+      const S = DB.sess;
+      if (!S || !$('#tm')) return;
+
+      $('#tm').textContent = '⏱ ' + (S.t0 ? clock((Date.now() - S.t0) / 1000) : '0:00');
+
+      const bar = document.querySelector('.rest.run');
+      const R = S.rest;
+      if (!bar || !R || !R.e) return;
+
+      const left = R.total - (Date.now() - R.t) / 1000;
+      bar.querySelector('.fill').style.width = (left > 0 ? (left / R.total) * 100 : 100) + '%';
+      bar.querySelector('span').textContent = left > 0 ? clock(Math.ceil(left)) : '+' + clock(-left);
+      bar.classList.toggle('over', left <= 0);
+
+      if (left <= 0 && !R.done) {      // buzz once when the time is up (Android only)
+        R.done = true;
+        save();
+        navigator.vibrate?.([200, 100, 200]);
+      }
+    }
 
     $('#v-Workouts').addEventListener('click', e => {
       if (!inW) return; const t = e.target.closest('button,[data-act]'); if (!t) return;
@@ -1012,13 +1349,21 @@
       else if (t.dataset.edit) exForm(w, w.ex.find(x => x.id === t.dataset.edit));
       else if (t.id === 'disc') { if (confirm('Discard this session? Logged sets will be lost.')) { DB.sess = null; inW = null; save(); renderFolders(); $('#seg-train').style.display = 'flex' } }
       else if (t.id === 'fin') finish(w);
+      else if (t.dataset.act === 'rest') editRest(w, t.closest('.ex').dataset.e);
       else if (t.dataset.act) {
         const ex = w.ex.find(x => x.id === t.closest('.ex').dataset.e), S = sets(ex), i = +t.closest('.sl').dataset.i, s = S[i];
         if (t.dataset.act === 'add') { S.push({ k: S.length ? S[S.length - 1].k : ex.w, r: '', d: 0, wu: 0 }); save(); renderWorkout() }
         else if (t.dataset.act === 'wu') { s.wu = s.wu ? 0 : 1; save(); renderWorkout() }
         else {
           s.d = s.d ? 0 : 1;
-          if (s.d) { if (s.r === '') s.r = (ex.last && ex.last[i] ? ex.last[i].r : loR(ex.r)); if (!DB.sess.t0) DB.sess.t0 = Date.now(); DB.sess.rest = Date.now() }
+          const R = DB.sess.rest;
+          if (s.d) {
+            if (s.r === '') s.r = ex.last && ex.last[i] ? ex.last[i].r : loR(ex.r);
+            if (!DB.sess.t0) DB.sess.t0 = Date.now();
+            DB.sess.rest = { e: ex.id, i, t: Date.now(), total: ex.rest || 90 };
+          } else if (R && R.e === ex.id && R.i === i) {
+            DB.sess.rest = null;
+          }
           save(); renderWorkout();
         }
       }
@@ -1028,37 +1373,13 @@
       const [f, w] = find(inW), ex = w.ex.find(x => x.id === i.closest('.ex').dataset.e);
       sets(ex)[+i.closest('.sl').dataset.i][i.dataset.f] = i.value === '' ? '' : parseFloat(i.value); save();
     });
-    function exForm(w, ex) {
-      form(ex ? 'Edit exercise' : 'Add exercise', [{ k: 'n', l: 'Name', v: ex?.n || '' }, { k: 's', l: 'Sets', t: 'number', v: ex?.s || 3 }, { k: 'r', l: 'Rep range (e.g. 8-10)', v: ex?.r || '8-10' }, { k: 'w', l: 'Weight (kg, 0 = bodyweight)', t: 'number', v: ex?.w ?? 0 }, { k: 'inc', l: 'Jump when progressing (kg)', t: 'number', v: ex?.inc ?? 2.5 }], o => {
+    function exForm(w, ex, after = renderWorkout) {
+      form(ex ? 'Edit exercise' : 'Add exercise', [{ k: 'n', l: 'Name', v: ex?.n || '' }, { k: 's', l: 'Sets', t: 'number', v: ex?.s || 3 }, { k: 'r', l: 'Rep range (e.g. 8-10)', v: ex?.r || '8-10' }, { k: 'w', l: 'Weight (kg, 0 = bodyweight)', t: 'number', v: ex?.w ?? 0 }, { k: 'inc', l: 'Jump when progressing (kg)', t: 'number', v: ex?.inc ?? 2.5 }, { k: 'rest', l: 'Rest between sets (seconds)', t: 'number', v: ex?.rest || 90 }], o => {
         if (!o.n) return; o.s = Math.max(1, Math.round(o.s));
         if (ex) { Object.assign(ex, o); if (DB.sess) delete DB.sess.s[ex.id] } else w.ex.push({ id: uid(), ...o, h: 0, f: 0, last: null });
-        save(); renderWorkout();
-      }, ex ? () => { w.ex = w.ex.filter(x => x !== ex); if (DB.sess) delete DB.sess.s[ex.id]; save(); renderWorkout() } : null);
+        save(); after();
+      }, ex ? () => { w.ex = w.ex.filter(x => x !== ex); if (DB.sess) delete DB.sess.s[ex.id]; save(); after() } : null);
     }
-
-    function finish(w) {
-      const S = DB.sess, ents = []; let vol = 0;
-      w.ex.forEach(ex => {
-        const done = (S.s[ex.id] || []).filter(s => s.d); if (!done.length) return;
-        const work = done.filter(s => !s.wu);
-        ents.push({ n: ex.n, sets: done.map(s => ({ k: s.k || 0, r: s.r || 0, wu: s.wu })) });
-        work.forEach(s => vol += (s.k || 0) * (s.r || 0));
-        if (!work.length) return;
-        ex.last = done.map(s => ({ k: s.k || 0, r: s.r || 0 }));
-        if (work[work.length - 1].k) ex.w = work[work.length - 1].k;
-        const hit = work.length >= ex.s && work.every(s => s.r >= hiR(ex.r)), miss = work.some(s => s.r < loR(ex.r));
-        ex.h = hit ? (ex.h || 0) + 1 : 0; ex.f = miss ? (ex.f || 0) + 1 : 0;
-        if (ex.h >= 2) { ex.w = Math.round((ex.w + ex.inc) * 2) / 2; ex.h = 0 }
-        else if (ex.f >= 2 && ex.w > 0) { ex.w = Math.round(ex.w * .9 * 2) / 2; ex.f = 0 }
-      });
-      if (!ents.length) return alert('Tick at least one set before finishing.');
-      DB.hist.unshift({ id: uid(), n: w.n, t0: S.t0, t1: Date.now(), ex: ents, vol });
-      DB.sess = null; inW = null; save();
-      $('#seg-train').style.display = 'flex';
-      document.querySelectorAll('#seg-train button').forEach(b => b.classList.toggle('active', b.dataset.view === 'History'));
-      $('#v-Workouts').style.display = 'none'; $('#v-History').style.display = 'block'; renderHist();
-    }
-
     /* ===== TRAIN: history ===== */
     function renderHist() {
       const el = $('#v-History');
@@ -1352,7 +1673,7 @@
           <div class="two" style="grid-template-columns:1.3fr 0.5fr auto;align-items:center">
             <input type="date" id="bd" value="${dk(Date.now())}" style="-webkit-appearance:none">
             <input type="number" id="bk" inputmode="decimal" step="0.1" placeholder="kg">
-            <button class="primary" id="bl" style="margin:0;width:auto;padding:12px 18px">Log</button>
+            <button class="primary-small" id="bl">Log</button>
           </div>
           <table style="margin-top:8px">${bwTable}</table>
           ${bwHint}
