@@ -753,6 +753,123 @@
       color: var(--dim)
     }
 
+    /* Calendar popup */
+    .sheet.cal {
+        display: flex;
+        flex-direction: column;
+        height: 92vh;
+        max-height: 92vh;
+        overflow: hidden;
+        padding-bottom: 0;
+    }
+
+    .cw,
+    .cg {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+    }
+
+    .cw span {
+        text-align: center;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--dim);
+        padding: 6px 0;
+    }
+
+    .cs {
+        flex: 1;
+        overflow-y: auto;
+        padding-bottom: 8px;
+    }
+
+    .cm {
+        margin: 20px 4px 8px;
+        font-size: 17px;
+    }
+
+    .cg {
+        row-gap: 6px;
+    }
+
+    .cg i {
+        display: block;
+    }
+
+    .cd {
+        position: relative;
+        width: 42px;
+        height: 42px;
+        margin: 0 auto;
+        border: 0;
+        border-radius: 50%;
+        background: none;
+        color: var(--ink);
+        font-size: 16px;
+    }
+
+    .cd.has {
+        background: rgba(193, 68, 61, 0.4);
+    }
+
+    .cd.today {
+        background: var(--ink);
+        color: var(--bg);
+        font-weight: 700;
+    }
+
+    .cd.sel {
+        outline: 2px solid var(--brass);
+        outline-offset: 2px;
+    }
+
+    .cd em {
+        position: absolute;
+        top: -3px;
+        right: -3px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--green);
+        color: #fff;
+        font-style: normal;
+        font-size: 10px;
+        line-height: 16px;
+        font-weight: 700;
+    }
+
+    .ci {
+        border-top: 1px solid var(--line);
+        padding: 12px 4px calc(12px + env(safe-area-inset-bottom, 0px));
+        font-size: 14px;
+        color: var(--dim);
+        min-height: 68px;
+    }
+
+    /* Backup */
+    .parts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 12px;
+    }
+
+    .part {
+        background: var(--s2);
+        border: 1px solid var(--line);
+        color: var(--dim);
+        border-radius: 10px;
+        padding: 11px 14px;
+        font-size: 14px;
+        min-height: 44px;
+    }
+
+    .part.on {
+        background: var(--iron);
+        border-color: var(--iron);
+        color: #fff;
+    }
+
     /* progress */
     .stats {
       display: grid;
@@ -844,7 +961,8 @@
     }
 
     .mo span {
-      white-space: nowrap
+      white-space: nowrap;
+      text-align: center;
     }
 
     .lg {
@@ -1407,19 +1525,48 @@
     /* ===== TRAIN: history ===== */
     function renderHist() {
       const el = $('#v-History');
-      if (!DB.hist.length) { el.innerHTML = '<div class="empty">No workouts yet. Finish a session and it shows up here.</div>'; return }
-      el.innerHTML = DB.hist.map(h => {
-        const d = new Date(h.t0);
-        return `<div class="card h"><button class="x" data-del="${h.id}" aria-label="Delete">×</button>
-    <h3>${esc(h.n)}</h3><div class="dt">${d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })} at ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-    ${h.ex.map(x => {
-          const b = x.sets.filter(s => !s.wu).sort((a, b) => b.k * b.r - a.k * a.r)[0] || x.sets[0];
-          return `<div class="hr"><span>${x.sets.length}× ${esc(x.n)}</span><b>${b.k ? b.k + ' kg' : 'BW'} × ${b.r}</b></div>`
-        }).join('')}
-    <div class="ft">${fmtDur(h.t1 - h.t0)} · ${fmtVol(h.vol)} kg</div></div>`
-      }).join('');
-    }
-    $('#v-History').onclick = e => { const b = e.target.closest('[data-del]'); if (b && confirm('Delete this workout from history?')) { DB.hist = DB.hist.filter(h => h.id !== b.dataset.del); save(); renderHist() } };
+
+      if (!DB.hist.length) {
+          el.innerHTML = '<div class="empty">No workouts yet. Finish a session and it shows up here.</div>';
+          return;
+      }
+
+      el.innerHTML = '<button class="secondary" data-cal style="margin:0 0 12px">📅 Calendar</button>' +
+        DB.hist.map(h => {
+            const d = new Date(h.t0);
+
+            return `<div class="card h">
+                <button class="x" data-del="${h.id}" aria-label="Delete">×</button>
+                <h3>${esc(h.n)}</h3>
+                <div class="dt">${d.toLocaleDateString(undefined, {
+                    weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+                })} at ${d.toLocaleTimeString([], {
+                    hour: '2-digit', minute: '2-digit'
+                })}</div>
+                ${h.ex.map(x => {
+                    const b = x.sets.filter(s => !s.wu)
+                        .sort((a, b) => b.k * b.r - a.k * a.r)[0] || x.sets[0];
+
+                    return `<div class="hr">
+                        <span>${x.sets.length}× ${esc(x.n)}</span>
+                        <b>${b.k ? b.k + ' kg' : 'BW'} × ${b.r}</b>
+                    </div>`;
+                }).join('')}
+                <div class="ft">${fmtDur(h.t1 - h.t0)} · ${fmtVol(h.vol)} kg</div>
+            </div>`;
+        }).join('');
+      }
+
+    $('#v-History').onclick = e => {
+      if (e.target.closest('[data-cal]')) return calendarPopup();
+        const b = e.target.closest('[data-del]');
+
+        if (b && confirm('Delete this workout from history?')) {
+            DB.hist = DB.hist.filter(h => h.id !== b.dataset.del);
+            save();
+            renderHist();
+        }
+    };
 
     /* ===== EAT: meals ===== */
     const TAGS = ['Breakfast', 'Lunch', 'Dinner', 'Snack']; let mealTag = 'All';
@@ -1626,22 +1773,325 @@
       form(item ? 'Edit item' : 'Add item', fields, onSave, onDelete);
     }
 
+    /* ---- calendar popup ---- */
+    function calendarPopup() {
+      const byDay = {};
+      DB.hist.forEach(h => (byDay[dk(h.t0)] ||= []).push(h));
+
+      const now = new Date();
+      const oldest = DB.hist.length ? new Date(Math.min(...DB.hist.map(h => h.t0))) : now;
+      const todayKey = dk(now);
+      let months = '';
+
+      for (let d = new Date(oldest.getFullYear(), oldest.getMonth(), 1); d <= now; d.setMonth(d.getMonth() + 1)) {
+        const y = d.getFullYear(), mo = d.getMonth();
+        const lead = (d.getDay() + 6) % 7;                   // blanks before the 1st (Monday-first)
+        const length = new Date(y, mo + 1, 0).getDate();
+        let cells = '<i></i>'.repeat(lead);
+
+        for (let day = 1; day <= length; day++) {
+          const key = dk(new Date(y, mo, day));
+          const cls = (byDay[key] ? ' has' : '') + (key === todayKey ? ' today' : '');
+          cells += `<button class="cd${cls}" data-day="${key}">${day}${byDay[key] ? '<em>✓</em>' : ''}</button>`;
+        }
+        months += `<h3 class="cm">${d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</h3><div class="cg">${cells}</div>`;
+      }
+
+      const m = document.createElement('div');
+      m.className = 'modal';
+      m.innerHTML = `
+        <div class="sheet cal">
+          <div class="ph">
+            <button class="link" data-x aria-label="Close" style="font-size:22px">✕</button>
+            <h2>Calendar</h2>
+            <span style="width:44px"></span>
+          </div>
+          <div class="cw"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+          <div class="cs">${months}</div>
+          <div class="ci">Tap a day with a ✓ to see what you did.</div>
+        </div>`;
+      document.body.appendChild(m);
+
+      const scroller = m.querySelector('.cs');
+      scroller.scrollTop = scroller.scrollHeight;            // start on the current month
+
+      m.onclick = e => {
+        if (e.target === m || e.target.closest('[data-x]')) return m.remove();
+        const b = e.target.closest('[data-day]');
+        if (!b) return;
+
+        m.querySelectorAll('.cd.sel').forEach(x => x.classList.remove('sel'));
+        b.classList.add('sel');
+
+        const [y, mo, day] = b.dataset.day.split('-').map(Number);
+        const title = new Date(y, mo - 1, day).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+        const list = byDay[b.dataset.day];
+        m.querySelector('.ci').innerHTML = `<b style="color:var(--ink)">${title}</b>` + (list
+          ? list.map(h => `<div>${esc(h.n)} · ${fmtDur(h.t1 - h.t0)} · ${fmtVol(h.vol)} kg</div>`).join('')
+          : '<div>No workout</div>');
+      };
+    }
+
+    /* ---- backup: choose what to export / import ---- */
+    const PARTS = [['folders', 'Workouts'], ['hist', 'History'], ['meals', 'Meals'], ['shop', 'Shoplist'], ['bw', 'Bodyweight']];
+    const chosen = { folders: 1, hist: 1, meals: 1, shop: 1, bw: 1 };
+    const picked = () => PARTS.map(([k]) => k).filter(k => chosen[k]);
+    const same = (a, b) => String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+    const line = (label, added, skipped) => `${label}: ${added} added${skipped ? `, ${skipped} skipped` : ''}`;
+
+    function exportData() {
+      const keys = picked();
+      if (!keys.length) return alert('Select at least one thing to export.');
+      const out = { app: 'back-to-fit', v: 2, exported: Date.now() };
+      keys.forEach(k => out[k] = DB[k]);
+      if (keys.includes('shop')) out.cur = DB.cur;
+
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([JSON.stringify(out)], { type: 'application/json' }));
+      a.download = 'back-to-fit-' + dk(Date.now()) + '.json';
+      a.click();
+    }
+
+    function importFile(file) {
+      file.text().then(text => {
+        let d = null;
+        try { d = JSON.parse(text); } catch (e) { }
+        if (!d || !PARTS.some(([k]) => Array.isArray(d[k]))) return alert('That file is not a Back to Fit backup.');
+
+        const keys = picked().filter(k => Array.isArray(d[k]));
+        if (!keys.length) return alert('The file has nothing that matches your selection.');
+
+        if (keys.includes('shop') && !DB.shop.length && d.cur) DB.cur = d.cur;   // adopt the currency only if your list is empty
+
+        const report = [];
+        if (keys.includes('folders')) report.push(mergeWorkouts(d.folders));
+        if (keys.includes('hist')) report.push(mergeHistory(d.hist));
+        if (keys.includes('meals')) report.push(mergeMeals(d.meals));
+        if (keys.includes('shop')) report.push(mergeShop(d.shop));
+        if (keys.includes('bw')) report.push(mergeWeight(d.bw));
+
+        save();
+        renderProg();
+        alert('Import finished\n\n' + report.join('\n'));
+      });
+    }
+
+    function mergeWorkouts(folders) {
+      const sig = list => list.map(e => String(e.n).trim().toLowerCase()).join('|');
+      let added = 0, skipped = 0;
+
+      folders.forEach((f, i) => {
+        if (!f || !Array.isArray(f.w)) return;
+        const target = DB.folders.find(x => same(x.n, f.n)) || DB.folders[i] || DB.folders[0];   // match by folder name, else by position
+
+        f.w.forEach(w => {
+          if (!w || !w.n || !Array.isArray(w.ex)) return;
+          const ex = w.ex.filter(e => e && e.n).map(e => ({
+            id: uid(), n: String(e.n), s: +e.s || 3, r: String(e.r || '8-10'), w: +e.w || 0, inc: +e.inc || 0,
+            rest: +e.rest || 90, h: +e.h || 0, f: +e.f || 0, last: Array.isArray(e.last) ? e.last : null
+          }));
+
+          const named = target.w.filter(x => same(x.n, w.n) || same(x.n, w.n + ' (imported)'));
+          if (named.some(x => sig(x.ex) === sig(ex))) { skipped++; return; }          // already have this exact workout
+
+          const clash = target.w.some(x => same(x.n, w.n));                            // same name, different exercises
+          target.w.push({ id: uid(), n: clash ? w.n + ' (imported)' : w.n, ex });
+          added++;
+        });
+      });
+      return line('Workouts', added, skipped);
+    }
+
+    function mergeHistory(list) {
+      const seen = new Set(DB.hist.flatMap(h => [h.id, h.t0]));
+      let added = 0;
+      list.forEach(h => {
+        const ok = h && typeof h.t0 === 'number' && typeof h.t1 === 'number' && Array.isArray(h.ex);
+        if (!ok || seen.has(h.id) || seen.has(h.t0)) return;
+        DB.hist.push({ ...h, vol: +h.vol || 0 });
+        seen.add(h.id); seen.add(h.t0); added++;
+      });
+      DB.hist.sort((a, b) => b.t0 - a.t0);
+      return line('History', added, list.length - added);
+    }
+
+    function mergeMeals(list) {
+      let added = 0;
+      list.forEach(m => {
+        if (!m || !m.n || DB.meals.some(x => same(x.n, m.n))) return;
+        DB.meals.push({
+          id: uid(), n: String(m.n), d: String(m.d || ''), tag: TAGS.includes(m.tag) ? m.tag : 'Lunch',
+          kcal: +m.kcal || 0, p: +m.p || 0, det: String(m.det || '')
+        });
+        added++;
+      });
+      return line('Meals', added, list.length - added);
+    }
+
+    function mergeShop(list) {
+      let added = 0;
+      list.forEach(i => {
+        if (!i || !i.n || DB.shop.some(x => same(x.n, i.n))) return;
+        DB.shop.push({ id: uid(), n: String(i.n), p: +i.p || 0, c: 0 });
+        added++;
+      });
+      return line('Shoplist', added, list.length - added);
+    }
+
+    function mergeWeight(list) {
+      const have = new Set(DB.bw.map(e => e.date));
+      let added = 0;
+      list.forEach(e => {
+        if (!e || !/^\d{4}-\d{2}-\d{2}$/.test(e.date) || !(+e.weight > 0) || have.has(e.date)) return;
+        DB.bw.push({ date: e.date, weight: +e.weight });
+        have.add(e.date); added++;
+      });
+      DB.bw.sort((a, b) => a.date.localeCompare(b.date));
+      return line('Bodyweight', added, list.length - added);
+    }
+
+    /* ---- import history from Strong / Hevy (CSV) ---- */
+    function parseCSV(text) {
+      const rows = []; let row = [], cell = '', q = false;
+      text = text.replace(/^\uFEFF/, '');
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (q) {
+          if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; }
+          else cell += c;
+        } else if (c === '"') q = true;
+        else if (c === ',') { row.push(cell); cell = ''; }
+        else if (c === '\n' || c === '\r') {
+          if (c === '\r' && text[i + 1] === '\n') i++;
+          row.push(cell); cell = '';
+          if (row.some(x => x !== '')) rows.push(row);
+          row = [];
+        } else cell += c;
+      }
+      row.push(cell);
+      if (row.some(x => x !== '')) rows.push(row);
+      const head = (rows.shift() || []).map(h => h.trim());
+      return rows.map(r => Object.fromEntries(head.map((h, i) => [h, (r[i] ?? '').trim()])));
+    }
+
+    const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+    function parseWhen(s) {
+      let m = s.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})(?::(\d{2}))?/);            // 2025-03-15 09:25:12  (Strong)
+      if (m) return new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5], +(m[6] || 0)).getTime();
+      m = s.match(/^(\d{1,2}) ([A-Za-z]{3})\w* (\d{4}),? (\d{1,2}):(\d{2})/);                   // 15 Mar 2025, 09:25  (Hevy)
+      if (m) { const mo = MONTHS.indexOf(m[2].toLowerCase()); if (mo >= 0) return new Date(+m[3], mo, +m[1], +m[4], +m[5]).getTime(); }
+      const t = Date.parse(s);
+      return isNaN(t) ? null : t;
+    }
+
+    function parseDuration(s) {                                                                 // "1h 13m", "45m", "1h"
+      const g = re => +(String(s).match(re)?.[1] || 0);
+      return ((g(/(\d+)\s*h/) * 60 + g(/(\d+)\s*m/)) * 60 + g(/(\d+)\s*s/)) * 1000;
+    }
+
+    function readWorkouts(rows, strong, unit) {
+      const factor = unit === 'lb' ? 0.45359237 : 1;
+      const groups = new Map();
+
+      rows.forEach(r => {
+        const t0 = parseWhen((strong ? r['Date'] : r['start_time']) || '');
+        const exName = strong ? r['Exercise Name'] : r['exercise_title'];
+        if (t0 === null || !exName) return;
+
+        let warm, weight, reps, sec;
+        if (strong) {
+          if (r['Set Order'] === 'Rest Timer') return;                                          // not a real set
+          warm = r['Set Order'] === 'W';
+          weight = parseFloat(r['Weight']); reps = parseFloat(r['Reps']); sec = parseFloat(r['Seconds']);
+        } else {
+          warm = r['set_type'] === 'warmup';
+          weight = parseFloat('weight_kg' in r ? r['weight_kg'] : r['weight_lbs']);
+          reps = parseFloat(r['reps']); sec = parseFloat(r['duration_seconds']);
+        }
+        const timed = !(reps > 0) && sec > 0;
+        const value = Math.round(reps > 0 ? reps : sec || 0);
+        if (!(value > 0)) return;
+
+        const name = ((strong ? r['Workout Name'] : r['title']) || 'Workout').trim();
+        const key = t0 + '|' + name;
+        if (!groups.has(key)) {
+          const dur = strong ? parseDuration(r['Duration']) : (parseWhen(r['end_time'] || '') ?? t0) - t0;
+          groups.set(key, { t0, name, dur, ex: new Map() });
+        }
+        const g = groups.get(key);
+        if (!g.ex.has(exName)) g.ex.set(exName, []);
+        g.ex.get(exName).push({ k: Math.round((weight || 0) * factor * 100) / 100, r: value, wu: warm ? 1 : 0, timed });
+      });
+
+      return [...groups.values()].map(g => {
+        let vol = 0;
+        const ex = [...g.ex].map(([n, sets]) => {
+          sets.forEach(s => { if (!s.wu && !s.timed) vol += s.k * s.r; });
+          const allTimed = sets.every(s => s.timed);
+          return { n: allTimed ? n + ' (sec)' : n, sets: sets.map(s => ({ k: s.k, r: s.r, wu: s.wu })) };
+        });
+        return { id: 'import-' + g.t0, n: g.name, t0: g.t0, t1: g.t0 + Math.max(g.dur || 0, 0), ex, vol: Math.round(vol) };
+      }).filter(h => h.ex.length);
+    }
+
+    function importCSV(file) {
+      file.text().then(text => {
+        let rows = [];
+        try { rows = parseCSV(text); } catch (e) { }
+        const head = rows[0] || {};
+        const strong = 'Workout Name' in head && 'Exercise Name' in head;
+        const hevy = 'exercise_title' in head && 'start_time' in head;
+        if (!strong && !hevy) return alert("That doesn't look like a Strong or Hevy export.");
+
+        const go = unit => {
+          const list = readWorkouts(rows, strong, unit);
+          if (!list.length) return alert('No workouts found in that file.');
+
+          const day = t => new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+          const first = Math.min(...list.map(h => h.t0));
+          const latest = list.reduce((a, h) => h.t0 > a.t0 ? h : a);
+          const ex = latest.ex[0];
+          const top = ex.sets.filter(s => !s.wu).sort((a, b) => b.k * b.r - a.k * a.r)[0] || ex.sets[0];
+
+          const ok = confirm(
+            `Found ${list.length} workouts (${day(first)} to ${day(latest.t0)}).\n\n` +
+            `Most recent: ${latest.n}\n${ex.n}: ${top.k} kg × ${top.r}\n\n` +
+            `Does that weight look right? Import these into your history?`);
+          if (!ok) return;
+
+          const result = mergeHistory(list);
+          save();
+          renderProg();
+          alert('Import finished\n\n' + result);
+        };
+
+        if (hevy) go('weight_lbs' in head ? 'lb' : 'kg');       // Hevy names the unit in the column header
+        else form('Import from Strong', [{ k: 'u', l: 'Which unit does this file use for weight?', t: 'select', o: ['kg', 'lb'], v: 'kg' }], o => go(o.u));
+      });
+    }
+
     /* ===== PROGRESS ===== */
     function renderProg() {
       const H = DB.hist, n = H.length, ms = H.reduce((a, h) => a + (h.t1 - h.t0), 0), vol = H.reduce((a, h) => a + h.vol, 0);
       const byDay = {}; H.forEach(h => byDay[dk(h.t0)] = (byDay[dk(h.t0)] || 0) + h.vol);
       const max = Math.max(1, ...Object.values(byDay)), W = 20, now = new Date(), start = new Date(now);
       start.setHours(0, 0, 0, 0); start.setDate(start.getDate() - start.getDay() - (W - 1) * 7);
-      let cells = '', months = '', last = -1;
+      let cells = '', months = ''; const weekMonth = [];
       for (let c = 0; c < W; c++) {
         const sun = new Date(start); sun.setDate(start.getDate() + c * 7);
-        if (sun.getMonth() !== last) { last = sun.getMonth(); months += `<span style="grid-column:${c + 1}/span ${Math.min(4, W - c)}">${sun.toLocaleDateString(undefined, { month: 'short' })}</span>` }
+        const thu = new Date(sun); thu.setDate(sun.getDate() + 4); weekMonth.push(thu);   // a week belongs to the month its Thursday is in
         for (let r = 0; r < 7; r++) {
           const d = new Date(sun); d.setDate(sun.getDate() + r);
           if (d > now) { cells += '<i class="nx"></i>'; continue }
           const v = byDay[dk(d)] || 0, l = !v ? 0 : v / max >= .75 ? 4 : v / max >= .5 ? 3 : v / max >= .25 ? 2 : 1;
           cells += `<i class="${l ? 'l' + l : ''}" title="${dk(d)}"></i>`;
         }
+      }
+      for (let c = 0; c < W;) {                       // one label per month, centred over its weeks
+        let end = c; while (end + 1 < W && weekMonth[end + 1].getMonth() === weekMonth[c].getMonth()) end++;
+        const len = end - c + 1;
+        if (len >= 2) months += `<span style="grid-column:${c + 1}/span ${len}">${weekMonth[c].toLocaleDateString(undefined, { month: 'short' })}</span>`;
+        c = end + 1;
       }
       const log = DB.bw.slice().reverse().slice(0, 12);
       const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -1680,7 +2130,8 @@
           </div>
         </div>
 
-        <div class="card">
+        <div class="card" data-cal style="cursor:pointer">
+          <div class="row sp" style="margin-bottom:8px"><h3 style="margin:0">Activity</h3><span style="color:var(--faint);font-size:13px">Calendar ›</span></div>
           <div class="mo">${months}</div>
           <div class="hm">
             <div class="wd">${weekdays}</div>
@@ -1705,24 +2156,34 @@
 
         <div class="card">
           <h3>Backup</h3>
-          <p>Everything lives on this device only. Export a copy now and then.</p>
+          <p>Pick what to export or import. Importing adds to what you already have and skips duplicates.</p>
+          <div class="parts">${PARTS.map(([k, label]) => `<button class="part ${chosen[k] ? 'on' : ''}" data-part="${k}">${label}</button>`).join('')}</div>
           <div class="two">
             <button class="secondary" id="exp" style="margin:0">Export</button>
             <button class="secondary" id="imp" style="margin:0">Import</button>
           </div>
           <input type="file" id="file" accept="application/json" hidden>
+          <button class="secondary" id="csvbtn" style="margin:12px 0 0">Import history from Strong / Hevy (CSV)</button>
+          <input type="file" id="csv" accept=".csv,text/csv" hidden>
         </div>`;
     }
     $('#p-prog').onclick = e => {
       const t = e.target;
+      if (t.closest('[data-cal]')) return calendarPopup();
+      const part = t.closest('[data-part]');
+      if (part) { const k = part.dataset.part; chosen[k] = chosen[k] ? 0 : 1; part.classList.toggle('on', !!chosen[k]); return }
       if (t.id === 'bl') { const date = $('#bd').value, weight = parseFloat($('#bk').value); if (!date || !weight) return; DB.bw = DB.bw.filter(x => x.date !== date); DB.bw.push({ date, weight }); DB.bw.sort((a, b) => a.date.localeCompare(b.date)); save(); renderProg() }
       else if (t.closest('tr[data-d]') && confirm('Delete this entry?')) { DB.bw = DB.bw.filter(x => x.date !== t.closest('tr').dataset.d); save(); renderProg() }
-      else if (t.id === 'exp') { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(DB)], { type: 'application/json' })); a.download = 'back-to-fit-' + dk(Date.now()) + '.json'; a.click() }
+      else if (t.id === 'exp') exportData();
       else if (t.id === 'imp') $('#file').click();
+      else if (t.id === 'csvbtn') $('#csv').click();
     };
     $('#p-prog').onchange = e => {
-      if (e.target.id !== 'file' || !e.target.files[0]) return;
-      e.target.files[0].text().then(s => { try { const d = JSON.parse(s); if (!d.folders || !d.hist) throw 0; if (confirm('Replace everything in the app with this backup?')) { DB = d; save(); renderProg(); alert('Backup restored.') } } catch (x) { alert('That file is not a Back to Fit backup.') } });
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      if (e.target.id === 'file') importFile(f);
+      if (e.target.id === 'csv') importCSV(f);
+      e.target.value = '';
     };
 
     /* ===== init ===== */
