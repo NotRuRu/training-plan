@@ -1,0 +1,126 @@
+/* ==========================================================================
+   EAT
+   Meal cards and the shopping list.
+   ========================================================================== 
+*/
+
+/* ----- Meals ----- */
+
+.meal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+  gap: 10px;
+  align-items: start;
+}
+
+.meal-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 155px;
+  padding: var(--space-md);
+  border-radius: var(--radius-large);
+  cursor: pointer;
+}
+
+.meal-card h3 {
+  margin: 0;
+  font-size: var(--font-size-base);
+}
+
+.meal-card-title {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.meal-description {
+  margin: 6px 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-small);
+}
+
+.meal-nutrition {
+  color: var(--color-text-faint);
+  font-size: var(--font-size-small);
+}
+
+/* Ingredients and Edit button, only visible when the card is open */
+.meal-details {
+  display: none;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+}
+
+.meal-details-text {
+  white-space: pre-line;
+}
+
+.meal-edit-row {
+  margin-top: var(--space-md);
+}
+
+.meal-edit-row .button-secondary {
+  margin: 0;
+}
+
+/* An open meal takes the full width and shows its details */
+.meal-card.open {
+  grid-column: 1 / -1;
+  min-height: 0;
+}
+
+.meal-card.open .meal-details {
+  display: block;
+}
+
+/* ----- Shopping list ----- */
+
+.shopping-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  min-height: 50px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.shopping-item:last-child {
+  border: 0;
+}
+
+.shopping-item input {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  accent-color: var(--color-gold);
+}
+
+.shopping-item span {
+  flex: 1;
+}
+
+.shopping-item b {
+  color: var(--color-text-muted);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.shopping-item.checked span {
+  color: var(--color-text-faint);
+  text-decoration: line-through;
+}
+
+.shopping-total {
+  padding-top: var(--space-md);
+  font-weight: 700;
+}
+
+.shopping-remaining {
+  color: var(--color-text-faint);
+  font-size: var(--font-size-body);
+}

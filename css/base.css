@@ -1,0 +1,401 @@
+/* ==========================================================================
+   BASE
+   Page layout and the building blocks every screen shares:
+   buttons, form fields, cards, tabs, popups.
+   ========================================================================== 
+*/
+
+/* ----- Reset and page ----- */
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  /* room for the iPhone notch on top and the floating tab bar at the bottom */
+  padding: calc(var(--safe-top) + 8px) 0 calc(110px + var(--safe-bottom));
+  background: var(--color-background);
+  color: var(--color-text);
+  font: var(--font-size-base) / 1.5 var(--font-family);
+}
+
+[hidden] {
+  display: none !important;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 var(--space-sm);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+h1 { font-size: var(--font-size-heading); }
+h2 { font-size: var(--font-size-title); }
+h3 { font-size: var(--font-size-base); }
+
+p {
+  margin: 0 0 10px;
+  color: var(--color-text-muted);
+}
+
+.page-content {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 0 var(--page-padding);
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 10px var(--page-padding) 6px;
+}
+
+.app-header h1::before {
+  content: "";
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: var(--space-sm);
+  border-radius: var(--radius-round);
+  background: var(--color-accent);
+}
+
+.app-header span {
+  font-size: var(--font-size-small);
+  color: var(--color-text-faint);
+}
+
+/* One screen is visible at a time: Train, Eat or Progress */
+.screen {
+  display: none;
+}
+
+.screen.active {
+  display: block;
+}
+
+/* ----- Buttons ----- */
+
+button {
+  font-family: var(--font-family);
+  cursor: pointer;
+}
+
+.button-primary {
+  width: 100%;
+  margin-top: 6px;
+  padding: 14px;
+  border: 0;
+  border-radius: var(--radius-medium);
+  background: var(--color-accent);
+  color: var(--color-white);
+  font-size: var(--font-size-large);
+  font-weight: 700;
+}
+
+.button-primary-small {
+  width: auto;
+  margin: 0;
+  padding: 10px var(--space-md);
+  border: 0;
+  border-radius: var(--radius-medium);
+  background: var(--color-accent);
+  color: var(--color-white);
+  font-size: var(--font-size-body);
+  font-weight: 700;
+}
+
+.button-secondary {
+  width: 100%;
+  margin-top: var(--space-sm);
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: none;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-body);
+}
+
+/* next to .button-secondary for destructive actions */
+.button-danger {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+/* Small gold pill, used for Back, Edit and Close */
+.button-link {
+  padding: 2px 7px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: rgba(var(--gold-rgb), 0.18);
+  color: var(--color-gold);
+  font-size: var(--font-size-caption);
+}
+
+.close-button {
+  font-size: var(--font-size-heading);
+}
+
+/* Dashed "+ Add ..." button */
+.button-add {
+  width: 100%;
+  min-height: 46px;
+  padding: var(--space-md);
+  border: 1px dashed var(--color-border);
+  border-radius: 9px;
+  background: none;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-body);
+}
+
+/* ----- Form fields ----- */
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  font: var(--font-size-large) var(--font-family);   /* 16px stops iPhones zooming in on focus */
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+/* ----- Layout helpers ----- */
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.row-spread {
+  justify-content: space-between;
+}
+
+.two-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.card {
+  margin-bottom: var(--space-md);
+  padding: var(--page-padding);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.empty-message {
+  padding: 22px var(--space-sm);
+  color: var(--color-text-faint);
+  font-size: var(--font-size-body);
+  text-align: center;
+}
+
+.tag {
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: rgba(var(--gold-rgb), 0.18);
+  color: var(--color-gold);
+  font-size: var(--font-size-small);
+}
+
+/* ----- Bottom tab bar ----- */
+
+.tab-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(14px + var(--safe-bottom));
+  z-index: 30;
+  display: flex;
+  justify-content: center;
+}
+
+.tab-bar-inner {
+  display: flex;
+  gap: 2px;
+  padding: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 30px;
+  background: rgba(var(--surface-rgb), 0.94);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px var(--color-shadow);
+}
+
+.tab-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-height: 48px;
+  padding: var(--space-sm) 20px;
+  border: 0;
+  border-radius: 24px;
+  background: none;
+  color: var(--color-text-faint);
+  font-size: var(--font-size-small);
+}
+
+.tab-button svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+.tab-button.active {
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+}
+
+.tab-button.active svg {
+  stroke: var(--color-accent);
+}
+
+/* ----- Segmented toggle (Workouts | History, Meals | Shop) ----- */
+
+.segmented {
+  display: flex;
+  gap: 6px;
+  margin: var(--space-xs) 0 var(--page-padding);
+  padding: var(--space-xs);
+  border-radius: 24px;
+  background: var(--color-surface-raised);
+}
+
+.segmented button {
+  flex: 1;
+  padding: 11px 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-text-faint);
+  font-size: var(--font-size-body);
+  font-weight: 600;
+}
+
+.segmented button.active {
+  background: var(--color-text);
+  color: var(--color-background);
+}
+
+/* ----- Filter chips (meal tags) ----- */
+
+.chip-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-xs);
+  overflow-x: auto;
+}
+
+.chip {
+  flex: none;
+  padding: 9px 15px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-body);
+}
+
+.chip.active {
+  border-color: var(--color-text);
+  background: var(--color-text);
+  color: var(--color-background);
+}
+
+/* ----- Popups (bottom sheets) ----- */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: var(--color-overlay);
+}
+
+.sheet {
+  width: 100%;
+  max-width: var(--content-width);
+  max-height: 90vh;
+  padding: var(--radius-sheet) var(--space-lg) calc(var(--radius-sheet) + var(--safe-bottom));
+  overflow: auto;
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  background: var(--color-surface);
+}
+
+.sheet label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--color-text-faint);
+  font-size: var(--font-size-caption);
+}
+
+.sheet label input,
+.sheet label select,
+.sheet label textarea {
+  margin-top: var(--space-xs);
+  color: var(--color-text);
+}
+
+/* Popup top row: close button, title, action */
+.popup-header {
+  display: grid;
+  grid-template-columns: var(--tap-size) 1fr auto;
+  align-items: center;
+  margin-bottom: var(--space-xs);
+}
+
+.popup-header h2 {
+  margin: 0;
+  text-align: center;
+}
+
+.popup-header-spacer {
+  width: var(--tap-size);
+}
+
+/* ----- "New version available" banner ----- */
+
+.update-banner {
+  position: fixed;
+  left: var(--page-padding);
+  right: var(--page-padding);
+  bottom: calc(92px + var(--safe-bottom));
+  z-index: 40;
+  max-width: 452px;
+  margin: 0 auto;
+  padding: var(--page-padding);
+  border: 0;
+  border-radius: var(--radius-card);
+  background: var(--color-accent);
+  box-shadow: 0 8px 24px var(--color-shadow);
+  color: var(--color-white);
+  font: 600 var(--font-size-base) var(--font-family);
+}

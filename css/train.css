@@ -1,0 +1,352 @@
+/* ==========================================================================
+   TRAIN
+   Folder list, workout cards, the workout preview popup,
+   the active workout screen (sets + rest timer) and the history list.
+   ========================================================================== 
+*/
+
+/* ----- Folders ----- */
+
+.folder {
+  margin-bottom: 10px;
+}
+
+.folder-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: 6px;
+}
+
+.folder-toggle {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 48px;
+  padding: var(--space-md) var(--space-xs);
+  border: 0;
+  background: none;
+  color: var(--color-text);
+  font-size: 20px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.folder-toggle small {
+  color: var(--color-text-faint);
+  font-size: var(--font-size-body);
+  font-weight: 400;
+}
+
+.folder-chevron {
+  display: inline-block;
+  margin-right: var(--space-xs);
+  color: var(--color-text-faint);
+  transition: transform 0.2s;
+}
+
+.folder-toggle.open .folder-chevron {
+  transform: rotate(90deg);
+}
+
+.folder-menu-button {
+  flex: none;
+  width: 36px;
+  height: 26px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface-raised);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-body);
+  letter-spacing: 1px;
+}
+
+/* ----- Workout cards (inside an open folder) ----- */
+
+.workout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+  gap: 10px;
+  margin: var(--space-xs) 0 var(--space-md);
+}
+
+.workout-card {
+  min-width: 0;
+  min-height: 130px;
+  margin: 0;
+  padding: var(--space-md);
+  border-radius: var(--radius-large);
+  cursor: pointer;
+}
+
+.workout-card h3 {
+  margin: 0 0 6px;
+  font-size: var(--font-size-large);
+}
+
+/* Exercise names, cut off after 3 lines */
+.workout-card-exercises {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-caption);
+}
+
+.workout-card .tag {
+  display: inline-block;
+  margin-top: var(--space-sm);
+}
+
+.workout-grid .button-add {
+  min-height: 130px;
+  border-radius: var(--radius-large);
+}
+
+/* ----- Workout preview popup ----- */
+
+.popup-start-button {
+  margin-top: var(--page-padding);
+}
+
+.preview-exercise {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+}
+
+.preview-exercise small {
+  display: block;
+  color: var(--color-text-faint);
+  font-size: var(--font-size-caption);
+}
+
+/* ----- Active workout screen ----- */
+
+.workout-header {
+  align-items: baseline;
+}
+
+/* Sticky bar with the workout clock and the Finish button */
+.workout-bar {
+  position: sticky;
+  top: var(--safe-top);
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-md);
+  padding: var(--space-sm) var(--page-padding);
+  border: 1px solid var(--color-accent);
+  border-right: 0;
+  border-left: 0;
+  border-radius: 7px 7px 0 0;
+  background: var(--color-surface-raised);
+  font-size: var(--font-size-body);
+  font-variant-numeric: tabular-nums;
+}
+
+.workout-exercises {
+  padding-top: 2px;
+}
+
+.exercise {
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.exercise:last-of-type {
+  border: 0;
+}
+
+.exercise-name {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-text);
+  font-size: var(--font-size-large);
+  font-weight: 700;
+  text-align: left;
+}
+
+.exercise-meta {
+  margin: 2px 0 var(--space-sm);
+  color: var(--color-text-faint);
+  font-size: var(--font-size-caption);
+}
+
+.add-set-button {
+  margin-top: var(--space-xs);
+}
+
+.add-exercise-button {
+  margin-top: var(--space-sm);
+}
+
+/* One row per set: number | kg | reps | tick */
+.set-row {
+  display: grid;
+  grid-template-columns: var(--tap-size) 1fr 1fr var(--tap-size);
+  gap: var(--space-sm);
+  align-items: center;
+  margin-bottom: var(--space-xs);
+  padding: var(--space-xs) 2px;
+  border-radius: var(--radius-small);
+}
+
+.set-row input {
+  padding: 10px var(--space-xs);
+  text-align: center;
+}
+
+.set-row.done {
+  background: rgba(var(--success-rgb), 0.16);
+}
+
+.set-row-header span {
+  color: var(--color-text-faint);
+  font-size: var(--font-size-small);
+  text-align: center;
+}
+
+.set-number,
+.set-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--tap-size);
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+  background: var(--color-surface-raised);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  user-select: none;
+}
+
+.set-number.warmup {
+  border-color: var(--color-gold);
+  background: rgba(var(--gold-rgb), 0.2);
+  color: var(--color-gold);
+}
+
+.set-check.done {
+  border-color: var(--color-success);
+  background: var(--color-success);
+  color: var(--color-white);
+}
+
+/* ----- Rest timer (between two sets) ----- */
+
+/* Waiting: a thin line with the planned rest time in the middle */
+.rest-timer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  height: 30px;
+  margin: 2px 0 var(--space-xs);
+  color: var(--color-gold);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.rest-timer::before,
+.rest-timer::after {
+  content: "";
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(var(--gold-rgb), 0.22);
+}
+
+/* Running: a bar that shrinks as the time runs out */
+.rest-timer.running {
+  position: relative;
+  justify-content: center;
+  height: var(--tap-size);
+  overflow: hidden;
+  border-radius: var(--radius-medium);
+  background: var(--color-surface-raised);
+  color: var(--color-white);
+}
+
+.rest-timer.running::before,
+.rest-timer.running::after {
+  display: none;
+}
+
+.rest-timer.running span {
+  position: relative;
+}
+
+.rest-timer-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: var(--color-gold);
+  transition: width 1s linear;
+}
+
+/* Past zero the bar turns red and counts up */
+.rest-timer.overtime .rest-timer-fill {
+  background: var(--color-accent);
+}
+
+/* ----- History list ----- */
+
+.calendar-button {
+  margin: 0 0 var(--space-md);
+}
+
+.history-card {
+  position: relative;
+  margin-bottom: var(--space-md);
+}
+
+.history-card h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.history-date {
+  margin-bottom: 10px;
+  color: var(--color-text-faint);
+  font-size: var(--font-size-caption);
+}
+
+.history-exercise {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 3px 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-body);
+}
+
+.history-exercise b {
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.history-footer {
+  margin-top: 10px;
+  color: var(--color-text-faint);
+  font-size: var(--font-size-caption);
+}
+
+.history-delete-button {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: var(--tap-size);
+  height: var(--tap-size);
+  border: 0;
+  background: none;
+  color: var(--color-text-faint);
+  font-size: var(--font-size-heading);
+}
