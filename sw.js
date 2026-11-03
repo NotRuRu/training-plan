@@ -7,7 +7,7 @@
 //    CACHE_NAME, and NEW file to APP_SHELL.
 //   The phone then downloads the whole new set and shows "New version available".
 
-const CACHE_NAME = 'back-to-fit-v0.5.0';
+const CACHE_NAME = 'back-to-fit-v0.5.1';
 
 const APP_SHELL = [
   './',

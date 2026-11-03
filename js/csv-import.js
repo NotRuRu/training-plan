@@ -3,7 +3,7 @@
 
 import { state, saveData } from './state.js';
 import { formatVolume, findBestSet } from './utils.js';
-import { POUNDS_TO_KG } from './constants.js';
+import { POUNDS_TO_KG, MAX_PLAUSIBLE_WORKOUT_MS } from './constants.js';
 import { showForm } from './ui.js';
 import { renderScreen } from './navigation.js';
 import { mergeHistory } from './backup.js';
@@ -77,54 +77,111 @@ export function parseDuration(text) {
   return ((hours * 60 + minutes) * 60 + seconds) * 1000;
 }
 
+/* ==========================================================================
+   The file formats app understands
+   Each reader turns one CSV row into the same simple shape:
+   { startText, workoutName, exerciseName, warmup, weight, reps, seconds, durationMs }
+   or returns null for rows that are not a set.
+   ========================================================================== 
+*/
+
+/** Works out which app made the file. Returns null when it is none app knows.
+ *  `unit` is 'kg' or 'lb', or null when the file does not say (app then asks). */
+export function detectFormat(headers) {
+  if ('exercise_title' in headers && 'start_time' in headers) {
+    return { name: 'hevy', unit: 'weight_lbs' in headers ? 'lb' : 'kg' };
+  }
+  if ('Workout' in headers && 'Exercise' in headers && 'Set' in headers) {
+    const weightColumn = Object.keys(headers).find(header => header.startsWith('Weight')) || 'Weight (kg)';
+    return { name: 'strong', unit: /lb/i.test(weightColumn) ? 'lb' : 'kg', weightColumn };
+  }
+  if ('Workout Name' in headers && 'Exercise Name' in headers) {
+    return { name: 'strong-classic', unit: null };
+  }
+  return null;
+}
+
+// Strong, current export: Date, Workout, Workout Duration (s), Exercise, Set, Weight (kg), Reps, Duration (s) ...
+const readStrongRow = (row, format) => ({
+  startText: row['Date'],
+  workoutName: row['Workout'],
+  exerciseName: row['Exercise'],
+  warmup: row['Set'] === 'W',                      // 'D' (drop set) and 'F' (failure) count as normal sets
+  weight: parseFloat(row[format.weightColumn]),
+  reps: parseFloat(row['Reps']),
+  seconds: parseFloat(row['Duration (s)']),
+  durationMs: (parseFloat(row['Workout Duration (s)']) || 0) * 1000,
+});
+
+// Strong, older export: Date, Workout Name, Duration ("1h 13m"), Exercise Name, Set Order, Weight, Reps, Seconds ...
+const readClassicStrongRow = row => {
+  if (row['Set Order'] === 'Rest Timer') return null;   // a rest, not a set
+  return {
+    startText: row['Date'],
+    workoutName: row['Workout Name'],
+    exerciseName: row['Exercise Name'],
+    warmup: row['Set Order'] === 'W',
+    weight: parseFloat(row['Weight']),
+    reps: parseFloat(row['Reps']),
+    seconds: parseFloat(row['Seconds']),
+    durationMs: parseDuration(row['Duration']),
+  };
+};
+
+// Hevy: title, start_time, end_time, exercise_title, set_type, weight_kg / weight_lbs, reps, duration_seconds ...
+const readHevyRow = row => {
+  const start = parseDateTime(row['start_time'] || '');
+  const end = parseDateTime(row['end_time'] || '');
+  return {
+    startText: row['start_time'],
+    workoutName: row['title'],
+    exerciseName: row['exercise_title'],
+    warmup: row['set_type'] === 'warmup',
+    weight: parseFloat('weight_kg' in row ? row['weight_kg'] : row['weight_lbs']),
+    reps: parseFloat(row['reps']),
+    seconds: parseFloat(row['duration_seconds']),
+    durationMs: start !== null && end !== null ? end - start : 0,
+  };
+};
+
+const ROW_READERS = { 'strong': readStrongRow, 'strong-classic': readClassicStrongRow, 'hevy': readHevyRow };
+
+
 /**
  * Turns the CSV rows into history entries.
- *   isStrong: true for a Strong file, false for Hevy
- *   unit:     'kg' or 'lb' (the weights in the file)
+ *   format: what detectFormat() returned
+ *   unit:   'kg' or 'lb'. Only needed when the file does not say (format.unit is null).
  */
-export function buildHistoryFromRows(rows, isStrong, unit) {
+export function buildHistoryFromRows(rows, format, unit = format.unit) {
   const kgPerUnit = unit === 'lb' ? POUNDS_TO_KG : 1;
+  const readRow = ROW_READERS[format.name];
   const workouts = new Map();   // one entry per start time + workout name
 
   rows.forEach(row => {
-    const startedAt = parseDateTime((isStrong ? row['Date'] : row['start_time']) || '');
-    const exerciseName = isStrong ? row['Exercise Name'] : row['exercise_title'];
-    if (startedAt === null || !exerciseName) return;
-
-    let warmup, weight, reps, seconds;
-    if (isStrong) {
-      if (row['Set Order'] === 'Rest Timer') return;   // not a real set
-      warmup = row['Set Order'] === 'W';
-      weight = parseFloat(row['Weight']);
-      reps = parseFloat(row['Reps']);
-      seconds = parseFloat(row['Seconds']);
-    } else {
-      warmup = row['set_type'] === 'warmup';
-      weight = parseFloat('weight_kg' in row ? row['weight_kg'] : row['weight_lbs']);
-      reps = parseFloat(row['reps']);
-      seconds = parseFloat(row['duration_seconds']);
-    }
+    const set = readRow(row, format);
+    if (!set) return;
+    const startedAt = parseDateTime(set.startText || '');
+    if (startedAt === null || !set.exerciseName) return;
 
     // Holds like a plank have no reps: store the seconds instead
-    const isTimed = !(reps > 0) && seconds > 0;
-    const amount = Math.round(reps > 0 ? reps : seconds || 0);
+    const isTimed = !(set.reps > 0) && set.seconds > 0;
+    const amount = Math.round(set.reps > 0 ? set.reps : set.seconds || 0);
     if (!(amount > 0)) return;
 
-    const workoutName = ((isStrong ? row['Workout Name'] : row['title']) || 'Workout').trim();
+    const workoutName = (set.workoutName || 'Workout').trim();
     const key = startedAt + '|' + workoutName;
     if (!workouts.has(key)) {
-      const duration = isStrong
-        ? parseDuration(row['Duration'])
-        : (parseDateTime(row['end_time'] || '') ?? startedAt) - startedAt;
+      // A timer left running makes an impossible duration: treat it as unknown (0)
+      const duration = set.durationMs > MAX_PLAUSIBLE_WORKOUT_MS ? 0 : set.durationMs;
       workouts.set(key, { startedAt, name: workoutName, duration, exercises: new Map() });
     }
 
     const workout = workouts.get(key);
-    if (!workout.exercises.has(exerciseName)) workout.exercises.set(exerciseName, []);
-    workout.exercises.get(exerciseName).push({
-      kg: Math.round((weight || 0) * kgPerUnit * 100) / 100,
+    if (!workout.exercises.has(set.exerciseName)) workout.exercises.set(set.exerciseName, []);
+    workout.exercises.get(set.exerciseName).push({
+      kg: Math.round((set.weight || 0) * kgPerUnit * 100) / 100,
       reps: amount,
-      warmup,
+      warmup: set.warmup,
       isTimed,
     });
   });
@@ -164,11 +221,13 @@ function confirmAndImport(entries) {
   const newest = entries.reduce((latest, entry) => entry.startedAt > latest.startedAt ? entry : latest);
   const firstExercise = newest.exercises[0];
   const topSet = findBestSet(firstExercise.sets);
+  const withoutDuration = entries.filter(entry => entry.endedAt === entry.startedAt).length;
 
   const agreed = confirm(
     `Found ${entries.length} workouts (${formatDay(oldest)} to ${formatDay(newest.startedAt)}).\n\n`
     + `Most recent: ${newest.name}\n${firstExercise.name}: ${topSet.kg} kg × ${topSet.reps}\n\n`
-    + 'Does that weight look right? Import these into your history?');
+    + (withoutDuration ? `${withoutDuration} had no usable duration (such as a timer left running) and will show 0m.\n\n` : '')
+    + 'Does that weight look right? Workouts you already have are skipped. Import?');
   if (!agreed) return;
 
   const summary = mergeHistory(entries);
@@ -182,20 +241,17 @@ export function importHistoryCsv(file) {
     let rows = [];
     try { rows = parseCsv(text); } catch (error) { /* handled below */ }
 
-    const headers = rows[0] || {};
-    const isStrong = 'Workout Name' in headers && 'Exercise Name' in headers;
-    const isHevy = 'exercise_title' in headers && 'start_time' in headers;
-    if (!isStrong && !isHevy) return alert("That doesn't look like a Strong or Hevy export.");
+    const format = detectFormat(rows[0] || {});
+    if (!format) return alert("That doesn't look like a Strong or Hevy export.");
 
-    if (isHevy) {
-      // Hevy names the unit in the column header: weight_kg or weight_lbs
-      confirmAndImport(buildHistoryFromRows(rows, false, 'weight_lbs' in headers ? 'lb' : 'kg'));
+    if (format.unit) {
+      confirmAndImport(buildHistoryFromRows(rows, format));
     } else {
-      // Strong does not say which unit the file uses, so ask
+      // The older Strong export does not say which unit it uses, so ask
       showForm({
         title: 'Import from Strong',
         fields: [{ name: 'unit', label: 'Which unit does this file use for weight?', type: 'select', options: ['kg', 'lb'], value: 'kg' }],
-        onSave: values => confirmAndImport(buildHistoryFromRows(rows, true, values.unit)),
+        onSave: values => confirmAndImport(buildHistoryFromRows(rows, format, values.unit)),
       });
     }
   });

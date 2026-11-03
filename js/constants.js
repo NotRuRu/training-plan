@@ -4,6 +4,13 @@ export const DEFAULT_REST_SECONDS = 90;
 export const MEAL_TAGS = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 export const POUNDS_TO_KG = 0.45359237;
 
+// Importing history: two workouts that start within this time of each other are the same workout.
+// (Two exports of the same workout can differ by a few minutes.)
+export const DUPLICATE_WINDOW_MS = 30 * 60 * 1000;
+
+// A workout longer than this is a forgotten timer, not a real workout. Its duration is ignored.
+export const MAX_PLAUSIBLE_WORKOUT_MS = 6 * 60 * 60 * 1000;
+
 // How many weeks the Progress heatmap shows.
 // The page passes this number to the CSS as --heatmap-weeks.
 export const HEATMAP_WEEKS = 20;

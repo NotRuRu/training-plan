@@ -3,7 +3,7 @@
 
 import { state, saveData } from './state.js';
 import { createId, sameText, toDateKey } from './utils.js';
-import { MEAL_TAGS } from './constants.js';
+import { MEAL_TAGS, DUPLICATE_WINDOW_MS } from './constants.js';
 import { migrateData } from './migrate.js';
 import { renderScreen } from './navigation.js';
 
@@ -124,22 +124,25 @@ export function mergeWorkouts(importedFolders) {
   return summaryLine('Workouts', added, skipped);
 }
 
-/** A workout is a duplicate when its id or its start time is already in your history. */
+/** A workout is a duplicate when its id is already in your history, or when you already
+ *  have a workout that started within 30 minutes of it (DUPLICATE_WINDOW_MS). */
 export function mergeHistory(importedEntries) {
-  const seen = new Set(state.data.history.flatMap(entry => [entry.id, entry.startedAt]));
+  const history = state.data.history;
+  const knownIds = new Set(history.map(entry => entry.id));
+  const startsNearby = startedAt =>
+    history.some(entry => Math.abs(entry.startedAt - startedAt) <= DUPLICATE_WINDOW_MS);
   let added = 0;
 
   importedEntries.forEach(entry => {
     const isValid = entry && typeof entry.startedAt === 'number' && typeof entry.endedAt === 'number'
       && Array.isArray(entry.exercises);
-    if (!isValid || seen.has(entry.id) || seen.has(entry.startedAt)) return;
+    if (!isValid || knownIds.has(entry.id) || startsNearby(entry.startedAt)) return;
 
-    state.data.history.push({ ...entry, volume: +entry.volume || 0 });
-    seen.add(entry.id);
-    seen.add(entry.startedAt);
+    history.push({ ...entry, volume: +entry.volume || 0 });
+    knownIds.add(entry.id);
     added++;
   });
-  state.data.history.sort((a, b) => b.startedAt - a.startedAt);   // newest first
+  history.sort((a, b) => b.startedAt - a.startedAt);   // newest first
   return summaryLine('History', added, importedEntries.length - added);
 }
 
